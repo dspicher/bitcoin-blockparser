@@ -4,31 +4,27 @@ use std::io::{self, Write};
 
 use clap::{ArgMatches, Command};
 
-use crate::blockchain::proto::block::{self, Block};
-use crate::blockchain::proto::script::ScriptPattern;
-use crate::blockchain::proto::ToRaw;
 use crate::callbacks::Callback;
-use crate::common::utils;
 
 pub struct SimpleStats {
     n_valid_blocks: u64,
-    block_sizes: Vec<u32>,
+    block_sizes: Vec<usize>,
 
-    n_tx: u64,
-    n_tx_inputs: u64,
-    n_tx_outputs: u64,
+    n_tx: usize,
+    n_tx_inputs: usize,
+    n_tx_outputs: usize,
     n_tx_total_fee: u64,
     n_tx_total_volume: u64,
 
     /// Biggest value transaction (value, height, txid)
-    tx_biggest_value: (u64, u64, sha256d::Hash),
+    tx_biggest_value: (u64, u64, bitcoin::Txid),
     /// Biggest size transaction (size, height, txid)
-    tx_biggest_size: (usize, u64, sha256d::Hash),
+    tx_biggest_size: (usize, u64, bitcoin::Txid),
     /// Contains transaction type count
-    n_tx_types: HashMap<ScriptPattern, u64>,
+    n_tx_types: HashMap<bitcoin::AddressType, u64>,
     /// First occurence of transaction type
     /// (block_height, txid, index)
-    tx_first_occs: HashMap<ScriptPattern, (u64, sha256d::Hash, u32)>,
+    tx_first_occs: HashMap<bitcoin::AddressType, (u64, bitcoin::Txid, usize)>,
 
     /// Time stats
     t_between_blocks: Vec<u32>,
@@ -45,8 +41,8 @@ impl Default for SimpleStats {
             n_tx_outputs: 0,
             n_tx_total_fee: 0,
             n_tx_total_volume: 0,
-            tx_biggest_value: (0, 0, sha256d::Hash::all_zeros()),
-            tx_biggest_size: (0, 0, sha256d::Hash::all_zeros()),
+            tx_biggest_value: (0, 0, sha256d::Hash::all_zeros().into()),
+            tx_biggest_size: (0, 0, sha256d::Hash::all_zeros().into()),
             n_tx_types: HashMap::new(),
             tx_first_occs: HashMap::new(),
             t_between_blocks: vec![],
@@ -59,22 +55,17 @@ impl SimpleStats {
     /// Saves transaction pattern with txid of first occurence
     fn process_tx_pattern(
         &mut self,
-        script_pattern: ScriptPattern,
+        address_type: bitcoin::AddressType,
         block_height: u64,
-        txid: sha256d::Hash,
-        index: u32,
+        txid: bitcoin::Txid,
+        index: usize,
     ) {
-        // Strip exact OP_RETURN bytes
-        let pattern = match script_pattern {
-            ScriptPattern::OpReturn(_) => ScriptPattern::OpReturn(String::new()),
-            p => p,
-        };
-        if !self.n_tx_types.contains_key(&pattern) {
-            self.n_tx_types.insert(pattern.clone(), 1);
+        if !self.n_tx_types.contains_key(&address_type) {
+            self.n_tx_types.insert(address_type.clone(), 1);
             self.tx_first_occs
-                .insert(pattern, (block_height, txid, index));
+                .insert(address_type, (block_height, txid, index));
         } else {
-            let counter = self.n_tx_types.entry(pattern).or_insert(1);
+            let counter = self.n_tx_types.entry(address_type).or_insert(1);
             *counter += 1;
         }
     }
@@ -105,12 +96,14 @@ impl SimpleStats {
         writeln!(
             buffer,
             "   -> avg block size:\t\t{:.2} KiB",
-            utils::get_mean(&self.block_sizes) / 1024.00
+            self.block_sizes.iter().sum::<usize>() as f64
+                / (1024.00 * self.block_sizes.len() as f64)
         )?;
         writeln!(
             buffer,
             "   -> avg time between blocks:\t{:.2} (minutes)",
-            utils::get_mean(&self.t_between_blocks) / 60.00
+            self.t_between_blocks.iter().sum::<u32>() as f64
+                / (60.00 * self.t_between_blocks.len() as f64)
         )?;
         writeln!(
             buffer,
@@ -203,40 +196,44 @@ impl Callback for SimpleStats {
         Ok(())
     }
 
-    fn on_block(&mut self, block: &Block, block_height: u64) -> anyhow::Result<()> {
+    fn on_block(&mut self, block: &bitcoin::Block, block_height: u64) -> anyhow::Result<()> {
         self.n_valid_blocks += 1;
-        self.n_tx += block.tx_count.value;
-        self.block_sizes.push(block.size);
+        self.n_tx += block.txdata.len();
+        self.block_sizes.push(block.size());
 
-        for tx in &block.txs {
+        for tx in &block.txdata {
             // Collect fee rewards
-            if tx.value.is_coinbase() {
-                self.n_tx_total_fee += tx.value.outputs[0]
-                    .out
-                    .value
-                    .checked_sub(block::get_base_reward(block_height))
-                    .unwrap_or_default();
+            if tx.is_coin_base() {
+                self.n_tx_total_fee += tx.output[0].value;
+                // .checked_sub(block::get_base_reward(block_height))
+                // .unwrap_or_default();
             }
 
-            self.n_tx_inputs += tx.value.in_count.value;
-            self.n_tx_outputs += tx.value.out_count.value;
+            self.n_tx_inputs += tx.input.len();
+            self.n_tx_outputs += tx.output.len();
 
             let mut tx_value = 0;
-            for (i, o) in tx.value.outputs.iter().enumerate() {
-                self.process_tx_pattern(o.script.pattern.clone(), block_height, tx.hash, i as u32);
-                tx_value += o.out.value;
+            for (i, o) in tx.output.iter().enumerate() {
+                if let Ok(addr) =
+                    bitcoin::Address::from_script(&o.script_pubkey, bitcoin::Network::Bitcoin)
+                {
+                    if let Some(t) = addr.address_type() {
+                        self.process_tx_pattern(t, block_height, tx.txid(), i);
+                    }
+                }
+                tx_value += o.value;
             }
             // Calculate and save biggest value transaction
             if tx_value > self.tx_biggest_value.0 {
-                self.tx_biggest_value = (tx_value, block_height, tx.hash);
+                self.tx_biggest_value = (tx_value, block_height, tx.txid());
             }
 
             self.n_tx_total_volume += tx_value;
 
             // Calculate and save biggest size transaction
-            let tx_size = tx.value.to_bytes().len();
+            let tx_size = tx.size();
             if tx_size > self.tx_biggest_size.0 {
-                self.tx_biggest_size = (tx_size, block_height, tx.hash);
+                self.tx_biggest_size = (tx_size, block_height, tx.txid());
             }
         }
 
@@ -244,13 +241,12 @@ impl Callback for SimpleStats {
         if self.last_timestamp > 0 {
             let diff = block
                 .header
-                .value
-                .timestamp
+                .time
                 .checked_sub(self.last_timestamp)
                 .unwrap_or_default();
             self.t_between_blocks.push(diff);
         }
-        self.last_timestamp = block.header.value.timestamp;
+        self.last_timestamp = block.header.time;
         Ok(())
     }
 

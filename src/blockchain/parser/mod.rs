@@ -1,7 +1,6 @@
 use std::time::{Duration, Instant};
 
 use crate::blockchain::parser::chain::ChainStorage;
-use crate::blockchain::proto::block::Block;
 use crate::callbacks::Callback;
 use crate::ParserOptions;
 
@@ -79,7 +78,7 @@ impl BlockchainParser {
     }
 
     /// Triggers the on_block() callback and updates statistics.
-    fn on_block(&mut self, block: &Block, height: u64) -> anyhow::Result<()> {
+    fn on_block(&mut self, block: &bitcoin::Block, height: u64) -> anyhow::Result<()> {
         self.callback.on_block(block, height)?;
         log::trace!(target: "parser", "on_block(height={}) called", height);
         if self.callback.show_progress() {

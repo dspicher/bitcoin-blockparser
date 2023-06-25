@@ -1,12 +1,9 @@
-use bitcoin::hashes::{sha256d, Hash};
 use std::fs::{self, File};
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
-use byteorder::{LittleEndian, ReadBytesExt};
 use clap::{Arg, ArgMatches, Command};
 
-use crate::blockchain::proto::block::Block;
 use crate::callbacks::Callback;
 
 /// Dumps the UTXOs along with address in a csv file
@@ -15,8 +12,8 @@ pub struct UnspentCsvDump {
     writer: BufWriter<File>,
     unspents: super::UnspentsTracker,
     start_height: u64,
-    tx_count: u64,
-    in_count: u64,
+    tx_count: usize,
+    in_count: usize,
     out_count: u64,
 }
 
@@ -73,12 +70,12 @@ impl Callback for UnspentCsvDump {
     ///   * block height as "last modified"
     ///   * output_val
     ///   * address
-    fn on_block(&mut self, block: &Block, block_height: u64) -> anyhow::Result<()> {
-        for tx in &block.txs {
+    fn on_block(&mut self, block: &bitcoin::Block, block_height: u64) -> anyhow::Result<()> {
+        for tx in &block.txdata {
             self.in_count += self.unspents.remove_unspents(tx);
             self.out_count += self.unspents.insert_unspents(tx, block_height);
         }
-        self.tx_count += block.tx_count.value;
+        self.tx_count += block.txdata.len();
         Ok(())
     }
 
@@ -91,16 +88,10 @@ impl Callback for UnspentCsvDump {
             .as_bytes(),
         )?;
         for (key, value) in self.unspents.0.iter() {
-            let txid = sha256d::Hash::from_slice(&key[0..32]).unwrap();
-            let mut index = &key[32..];
             self.writer.write_all(
                 format!(
                     "{};{};{};{};{}\n",
-                    txid,
-                    index.read_u32::<LittleEndian>()?,
-                    value.block_height,
-                    value.value,
-                    value.address
+                    key.txid, key.vout, value.block_height, value.value, value.address
                 )
                 .as_bytes(),
             )?;
