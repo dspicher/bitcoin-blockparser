@@ -5,7 +5,6 @@ use std::path::PathBuf;
 
 use clap::{Arg, ArgMatches, Command};
 
-use crate::blockchain::proto::block::Block;
 use crate::callbacks::Callback;
 
 /// Dumps all addresses with non-zero balance in a csv file
@@ -68,8 +67,8 @@ impl Callback for Balances {
     ///   * block height as "last modified"
     ///   * output_val
     ///   * address
-    fn on_block(&mut self, block: &Block, block_height: u64) -> anyhow::Result<()> {
-        for tx in &block.txs {
+    fn on_block(&mut self, block: &bitcoin::Block, block_height: u64) -> anyhow::Result<()> {
+        for tx in &block.txdata {
             self.unspents.remove_unspents(tx);
             self.unspents.insert_unspents(tx, block_height);
         }
@@ -83,7 +82,7 @@ impl Callback for Balances {
             .write_all(format!("{};{}\n", "address", "balance").as_bytes())?;
 
         // Collect balances for each address
-        let mut balances: HashMap<&str, u64> = HashMap::new();
+        let mut balances: HashMap<&bitcoin::Address, u64> = HashMap::new();
         for unspent in self.unspents.0.values() {
             let entry = balances.entry(&unspent.address).or_insert(0);
             *entry += unspent.value

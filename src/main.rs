@@ -12,10 +12,8 @@ use crate::callbacks::opreturn::OpReturn;
 use crate::callbacks::simplestats::SimpleStats;
 use crate::callbacks::unspentcsvdump::UnspentCsvDump;
 use crate::callbacks::Callback;
-use crate::common::utils;
 
 pub mod blockchain;
-pub mod common;
 pub mod callbacks;
 
 #[derive(Copy, Clone)]
@@ -27,7 +25,7 @@ pub struct BlockHeightRange {
 
 impl BlockHeightRange {
     pub fn new(start: u64, end: Option<u64>) -> anyhow::Result<Self> {
-        if end.is_some() && start >= end.unwrap() {
+        if end.is_some() && start > end.unwrap() {
             anyhow::bail!("--start value must be lower than --end value",);
         }
         Ok(Self { start, end })
@@ -145,6 +143,13 @@ fn main() {
     }
 }
 
+/// Returns default directory. TODO: test on windows
+fn get_absolute_blockchain_dir(coin: &CoinType) -> PathBuf {
+    dirs::home_dir()
+        .expect("Unable to get home path from env!")
+        .join(&coin.default_folder)
+}
+
 /// Parses args or panics if some requirements are not met.
 fn parse_args(matches: clap::ArgMatches) -> anyhow::Result<ParserOptions> {
     let verify = matches.get_flag("verify");
@@ -154,7 +159,7 @@ fn parse_args(matches: clap::ArgMatches) -> anyhow::Result<ParserOptions> {
         .map_or_else(|| CoinType::from(Bitcoin), |v| v.parse().unwrap());
     let blockchain_dir = match matches.get_one::<String>("blockchain-dir") {
         Some(p) => PathBuf::from(p),
-        None => utils::get_absolute_blockchain_dir(&coin),
+        None => get_absolute_blockchain_dir(&coin),
     };
     let start = matches.get_one::<u64>("start").copied().unwrap_or(0);
     let end = matches.get_one::<u64>("end").copied();
@@ -237,10 +242,11 @@ mod tests {
     fn test_args_blockchain_dir() {
         let args = ["rusty-blockparser", "simplestats"];
         let options = parse_args(command().get_matches_from(args)).unwrap();
-        let bitcoin: crate::blockchain::parser::types::CoinType = "bitcoin".parse().unwrap();
         assert_eq!(
             options.blockchain_dir,
-            utils::get_absolute_blockchain_dir(&bitcoin)
+            dirs::home_dir()
+                .unwrap()
+                .join(&std::path::Path::new(".bitcoin").join("blocks"))
         );
 
         let args = ["rusty-blockparser", "-d", "foo", "simplestats"];

@@ -1,7 +1,5 @@
 use clap::{ArgMatches, Command};
 
-use crate::blockchain::proto::block::Block;
-use crate::blockchain::proto::script::ScriptPattern;
 use crate::callbacks::Callback;
 
 #[derive(Default)]
@@ -30,17 +28,33 @@ impl Callback for OpReturn {
         Ok(())
     }
 
-    fn on_block(&mut self, block: &Block, block_height: u64) -> anyhow::Result<()> {
-        for tx in &block.txs {
-            for out in tx.value.outputs.iter() {
-                if let ScriptPattern::OpReturn(data) = &out.script.pattern {
-                    if data.is_empty() {
+    fn on_block(&mut self, block: &bitcoin::Block, block_height: u64) -> anyhow::Result<()> {
+        for tx in &block.txdata {
+            for out in tx.output.iter() {
+                if out.script_pubkey.is_op_return() {
+                    let script = out.script_pubkey.as_script();
+                    if script.len() == 1 {
                         continue;
                     }
-                    println!(
-                        "height: {: <9} txid: {}    data: {}",
-                        block_height, &tx.hash, data
-                    );
+                    for inst in script.instructions() {
+                        if let Ok(bitcoin::script::Instruction::PushBytes(data)) = inst {
+                            if let Ok(s) = String::from_utf8(data.as_bytes().into()) {
+                                println!(
+                                    "height: {: <9} txid: {}    message: {}",
+                                    block_height,
+                                    &tx.txid(),
+                                    s
+                                );
+                            } else {
+                                println!(
+                                    "height: {: <9} txid: {}    data: {}",
+                                    block_height,
+                                    &tx.txid(),
+                                    hex::encode(data.as_bytes())
+                                );
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -1,12 +1,5 @@
 use clap::{ArgMatches, Command};
 
-use crate::blockchain::proto::tx::EvaluatedTx;
-use crate::blockchain::proto::tx::TxOutpoint;
-use crate::blockchain::proto::Hashed;
-use crate::blockchain::proto::ToRaw;
-
-use crate::blockchain::proto::block::Block;
-
 pub mod balances;
 pub mod opreturn;
 pub mod simplestats;
@@ -31,7 +24,7 @@ pub trait Callback {
     fn on_start(&mut self, block_height: u64) -> anyhow::Result<()>;
 
     /// Gets called if a new block is available.
-    fn on_block(&mut self, block: &Block, block_height: u64) -> anyhow::Result<()>;
+    fn on_block(&mut self, block: &bitcoin::Block, block_height: u64) -> anyhow::Result<()>;
 
     /// Gets called if the parser has finished and all blocks are handled
     fn on_complete(&mut self, block_height: u64) -> anyhow::Result<()>;
@@ -45,10 +38,12 @@ pub trait Callback {
 pub struct UnspentValue {
     pub block_height: u64,
     pub value: u64,
-    pub address: String,
+    pub address: bitcoin::Address,
 }
 
-pub struct UnspentsTracker(std::collections::HashMap<Vec<u8>, UnspentValue>);
+pub struct UnspentsTracker(
+    std::collections::HashMap<bitcoin::blockdata::transaction::OutPoint, UnspentValue>,
+);
 
 impl UnspentsTracker {
     pub fn new() -> Self {
@@ -56,36 +51,37 @@ impl UnspentsTracker {
     }
     /// Iterates over transaction inputs and removes spent outputs from HashMap.
     /// Returns the total number of processed inputs.
-    pub fn remove_unspents(&mut self, tx: &Hashed<EvaluatedTx>) -> u64 {
-        for input in &tx.value.inputs {
-            let key = input.outpoint.to_bytes();
-            self.0.remove(&key);
+    pub fn remove_unspents(&mut self, tx: &bitcoin::Transaction) -> usize {
+        for input in &tx.input {
+            self.0.remove(&input.previous_output);
         }
-        tx.value.in_count.value
+        tx.input.len()
     }
 
     /// Iterates over transaction outputs and adds valid unspents to HashMap.
     /// Returns the total number of valid outputs.
-    pub fn insert_unspents(&mut self, tx: &Hashed<EvaluatedTx>, block_height: u64) -> u64 {
+    pub fn insert_unspents(&mut self, tx: &bitcoin::Transaction, block_height: u64) -> u64 {
         let mut count = 0;
-        for (i, output) in tx.value.outputs.iter().enumerate() {
-            match &output.script.address {
-                Some(address) => {
+        for (i, output) in tx.output.iter().enumerate() {
+            match bitcoin::Address::from_script(&output.script_pubkey, bitcoin::Network::Bitcoin) {
+                Ok(address) => {
                     let unspent = UnspentValue {
                         block_height,
                         address: address.clone(),
-                        value: output.out.value,
+                        value: output.value,
                     };
 
-                    let key = TxOutpoint::new(tx.hash, i as u32).to_bytes();
+                    let key = bitcoin::blockdata::transaction::OutPoint {
+                        txid: tx.txid(),
+                        vout: i as u32,
+                    }; //TxOutTxOutpoint::new(tx.hash, i as u32).to_bytes();
                     self.0.insert(key, unspent);
                     count += 1;
                 }
-                None => {
+                Err(_) => {
                     log::debug!(
-                        target: "callback", "Ignoring invalid utxo in: {} ({})",
-                        &tx.hash,
-                        output.script.pattern
+                        target: "callback", "Ignoring invalid utxo in: {}",
+                        tx.txid(),
                     );
                 }
             }
