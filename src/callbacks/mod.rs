@@ -41,13 +41,15 @@ pub struct UnspentValue {
     pub address: bitcoin::Address,
 }
 
+#[derive(Default)]
 pub struct UnspentsTracker(
     std::collections::HashMap<bitcoin::blockdata::transaction::OutPoint, UnspentValue>,
 );
 
 impl UnspentsTracker {
+    #[must_use]
     pub fn new() -> Self {
-        Self(std::collections::HashMap::with_capacity(10000000))
+        Self(std::collections::HashMap::with_capacity(10_000_000))
     }
     /// Iterates over transaction inputs and removes spent outputs from HashMap.
     /// Returns the total number of processed inputs.

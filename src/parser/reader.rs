@@ -91,7 +91,7 @@ mod tests {
         assert_eq!(285, block.size());
 
         // Block Header
-        assert_eq!(0x00000001, block.header.version.to_consensus());
+        assert_eq!(0x0000_0001, block.header.version.to_consensus());
         assert_eq!(
             "0000000000000000000000000000000000000000000000000000000000000000",
             format!("{}", &block.header.prev_blockhash)
@@ -110,13 +110,13 @@ mod tests {
             &block.header.merkle_root,
             &block.compute_merkle_root().unwrap()
         );
-        assert_eq!(1231006505, block.header.time);
-        assert_eq!(0x1d00ffff, block.header.bits.to_consensus());
-        assert_eq!(2083236893, block.header.nonce);
+        assert_eq!(1_231_006_505, block.header.time);
+        assert_eq!(0x1d00_ffff, block.header.bits.to_consensus());
+        assert_eq!(2_083_236_893, block.header.nonce);
 
         // Tx
         assert_eq!(0x01, block.txdata.len());
-        assert_eq!(0x00000001, block.txdata[0].version);
+        assert_eq!(0x0000_0001, block.txdata[0].version);
 
         // Tx Inputs
         assert_eq!(0x01, block.txdata[0].input.len());
@@ -124,25 +124,25 @@ mod tests {
             "0000000000000000000000000000000000000000000000000000000000000000",
             format!("{}", &block.txdata[0].input[0].previous_output.txid)
         );
-        assert_eq!(0xffffffff, block.txdata[0].input[0].previous_output.vout);
+        assert_eq!(0xffff_ffff, block.txdata[0].input[0].previous_output.vout);
         assert_eq!(0x4d, block.txdata[0].input[0].script_sig.len());
         let script = hex::decode("04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73").unwrap();
         assert_eq!(script, block.txdata[0].input[0].script_sig.as_bytes());
         assert_eq!(
-            0xffffffff,
+            0xffff_ffff,
             block.txdata[0].input[0].sequence.to_consensus_u32()
         );
 
         // Tx Outputs
         assert_eq!(0x01, block.txdata[0].output.len());
         assert_eq!(
-            u64::from_be(0x00f2052a01000000),
+            u64::from_be(0x00f2_052a_0100_0000),
             block.txdata[0].output[0].value
         );
         assert_eq!(0x43, block.txdata[0].output[0].script_pubkey.len());
 
         let script = hex::decode("4104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac").unwrap();
         assert_eq!(script, block.txdata[0].output[0].script_pubkey.as_bytes());
-        assert_eq!(0x00000000, block.txdata[0].lock_time.to_consensus_u32());
+        assert_eq!(0x0000_0000, block.txdata[0].lock_time.to_consensus_u32());
     }
 }

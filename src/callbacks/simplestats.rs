@@ -60,8 +60,8 @@ impl SimpleStats {
         txid: bitcoin::Txid,
         index: usize,
     ) {
-        if !self.n_tx_types.contains_key(&address_type) {
-            self.n_tx_types.insert(address_type.clone(), 1);
+        if let std::collections::hash_map::Entry::Vacant(e) = self.n_tx_types.entry(address_type) {
+            e.insert(1);
             self.tx_first_occs
                 .insert(address_type, (block_height, txid, index));
         } else {
@@ -102,7 +102,7 @@ impl SimpleStats {
         writeln!(
             buffer,
             "   -> avg time between blocks:\t{:.2} (minutes)",
-            self.t_between_blocks.iter().sum::<u32>() as f64
+            f64::from(self.t_between_blocks.iter().sum::<u32>())
                 / (60.00 * self.t_between_blocks.len() as f64)
         )?;
         writeln!(
@@ -142,7 +142,7 @@ impl SimpleStats {
             height, &txid
         )?;
         let (value, height, txid) = self.tx_biggest_size;
-        writeln!(buffer, "   -> biggest size tx:\t\t{} bytes", value,)?;
+        writeln!(buffer, "   -> biggest size tx:\t\t{value} bytes",)?;
         writeln!(
             buffer,
             "        seen in block #{}, txid: {}\n",

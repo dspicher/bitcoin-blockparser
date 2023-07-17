@@ -47,7 +47,7 @@ impl Callback for UnspentCsvDump {
         let dump_folder = &PathBuf::from(matches.get_one::<String>("dump-folder").unwrap());
         let cb = UnspentCsvDump {
             dump_folder: PathBuf::from(dump_folder),
-            writer: UnspentCsvDump::create_writer(4000000, dump_folder.join("unspent.csv.tmp"))?,
+            writer: UnspentCsvDump::create_writer(4_000_000, dump_folder.join("unspent.csv.tmp"))?,
             unspents: super::UnspentsTracker::new(),
             start_height: 0,
             tx_count: 0,
@@ -87,7 +87,7 @@ impl Callback for UnspentCsvDump {
             )
             .as_bytes(),
         )?;
-        for (key, value) in self.unspents.0.iter() {
+        for (key, value) in &self.unspents.0 {
             self.writer.write_all(
                 format!(
                     "{};{};{};{};{}\n",

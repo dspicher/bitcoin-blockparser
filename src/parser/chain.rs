@@ -24,6 +24,7 @@ impl ChainStorage {
     }
 
     /// Returns the next block and its height
+    #[must_use]
     pub fn get_block(&mut self, height: u64) -> Option<bitcoin::Block> {
         // Read block
         let block_meta = self.chain_index.get(height)?;
@@ -32,7 +33,7 @@ impl ChainStorage {
 
         // Check if blk file can be closed
         if height == self.chain_index.max_height_by_blk(block_meta.blk_index) {
-            blk_file.close()
+            blk_file.close();
         }
 
         if self.verify {

@@ -46,7 +46,7 @@ impl Callback for Balances {
         let dump_folder = &PathBuf::from(matches.get_one::<String>("dump-folder").unwrap());
         let cb = Balances {
             dump_folder: PathBuf::from(dump_folder),
-            writer: Balances::create_writer(4000000, dump_folder.join("balances.csv.tmp"))?,
+            writer: Balances::create_writer(4_000_000, dump_folder.join("balances.csv.tmp"))?,
             unspents: super::UnspentsTracker::new(),
             start_height: 0,
             end_height: 0,
@@ -85,12 +85,12 @@ impl Callback for Balances {
         let mut balances: HashMap<&bitcoin::Address, u64> = HashMap::new();
         for unspent in self.unspents.0.values() {
             let entry = balances.entry(&unspent.address).or_insert(0);
-            *entry += unspent.value
+            *entry += unspent.value;
         }
 
-        for (address, balance) in balances.iter() {
+        for (address, balance) in &balances {
             self.writer
-                .write_all(format!("{};{}\n", address, balance).as_bytes())?;
+                .write_all(format!("{address};{balance}\n").as_bytes())?;
         }
 
         fs::rename(
