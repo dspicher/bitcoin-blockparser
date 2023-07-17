@@ -16,7 +16,6 @@ use crate::common::utils;
 
 pub mod blockchain;
 pub mod common;
-#[macro_use]
 pub mod callbacks;
 
 #[derive(Copy, Clone)]
