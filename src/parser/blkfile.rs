@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use anyhow::Context;
 use seek_bufread::BufReader;
 
-use crate::blockchain::parser::reader::BlockchainRead;
+use crate::parser::reader::BlockchainRead;
 
 /// Holds all necessary data about a raw blk file
 #[derive(Debug)]
