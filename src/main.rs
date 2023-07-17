@@ -13,7 +13,6 @@ use crate::callbacks::opreturn::OpReturn;
 use crate::callbacks::simplestats::SimpleStats;
 use crate::callbacks::unspentcsvdump::UnspentCsvDump;
 use crate::callbacks::Callback;
-use crate::common::logger::SimpleLogger;
 use crate::common::utils;
 use crate::errors::{OpError, OpResult};
 
@@ -66,8 +65,6 @@ pub struct ParserOptions {
     verify: bool,
     // Path to directory where blk.dat files are stored
     blockchain_dir: PathBuf,
-    // Verbosity level, 0 = Error, 1 = Info, 2 = Debug, 3+ = Trace
-    log_level_filter: log::LevelFilter,
     // Range which is considered for parsing
     range: BlockHeightRange,
 }
@@ -118,21 +115,17 @@ fn command() -> Command {
 }
 
 fn main() {
+    env_logger::init();
     let options = match parse_args(command().get_matches()) {
         Ok(o) => o,
         Err(desc) => {
-            // Init logger to print outstanding error message
-            SimpleLogger::init(log::LevelFilter::Debug).unwrap();
             log::error!(target: "main", "{}", desc);
             process::exit(1);
         }
     };
 
     // Apply log filter based on verbosity
-    let log_level = options.log_level_filter;
-    SimpleLogger::init(log_level).expect("Unable to initialize logger!");
     log::info!(target: "main", "Starting rusty-blockparser v{} ...", env!("CARGO_PKG_VERSION"));
-    log::debug!(target: "main", "Using log level {}", log_level);
     if options.verify {
         log::info!(target: "main", "Configured to verify merkle roots and block hashes");
     }
@@ -163,11 +156,6 @@ fn main() {
 /// Parses args or panics if some requirements are not met.
 fn parse_args(matches: clap::ArgMatches) -> OpResult<ParserOptions> {
     let verify = matches.get_flag("verify");
-    let log_level_filter = match matches.get_count("verbosity") {
-        0 => log::LevelFilter::Info,
-        1 => log::LevelFilter::Debug,
-        _ => log::LevelFilter::Trace,
-    };
 
     let coin = matches
         .get_one::<String>("coin")
@@ -205,7 +193,6 @@ fn parse_args(matches: clap::ArgMatches) -> OpResult<ParserOptions> {
         callback,
         verify,
         blockchain_dir,
-        log_level_filter,
         range,
     };
     Ok(options)
@@ -284,25 +271,6 @@ mod tests {
         ];
         let options = parse_args(command().get_matches_from(args)).unwrap();
         assert_eq!(options.blockchain_dir.to_str().unwrap(), "foo");
-    }
-
-    #[test]
-    fn test_args_log_level() {
-        let args = ["rusty-blockparser", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.log_level_filter, log::LevelFilter::Info,);
-
-        let args = ["rusty-blockparser", "-v", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.log_level_filter, log::LevelFilter::Debug,);
-
-        let args = ["rusty-blockparser", "-vv", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.log_level_filter, log::LevelFilter::Trace,);
-
-        let args = ["rusty-blockparser", "-vvv", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.log_level_filter, log::LevelFilter::Trace,);
     }
 
     #[test]
