@@ -61,7 +61,7 @@ impl Callback for Balances {
 
     fn on_start(&mut self, block_height: u64) -> OpResult<()> {
         self.start_height = block_height;
-        info!(target: "callback", "Executing balances with dump folder: {} ...", &self.dump_folder.display());
+        log::info!(target: "callback", "Executing balances with dump folder: {} ...", &self.dump_folder.display());
         Ok(())
     }
 
@@ -107,7 +107,7 @@ impl Callback for Balances {
         )
         .expect("Unable to rename tmp file!");
 
-        info!(target: "callback", "Done.\nDumped {} addresses.", balances.len());
+        log::info!(target: "callback", "Done.\nDumped {} addresses.", balances.len());
         Ok(())
     }
 }

@@ -71,7 +71,7 @@ impl Callback for CsvDump {
 
     fn on_start(&mut self, block_height: u64) -> OpResult<()> {
         self.start_height = block_height;
-        info!(target: "callback", "Executing csvdump with dump folder: {} ...", &self.dump_folder.display());
+        log::info!(target: "callback", "Executing csvdump with dump folder: {} ...", &self.dump_folder.display());
         Ok(())
     }
 
@@ -117,7 +117,7 @@ impl Callback for CsvDump {
             )?;
         }
 
-        info!(target: "callback", "Done.\nDumped blocks from height {} to {}:\n\
+        log::info!(target: "callback", "Done.\nDumped blocks from height {} to {}:\n\
                                    \t-> transactions: {:9}\n\
                                    \t-> inputs:       {:9}\n\
                                    \t-> outputs:      {:9}",
@@ -173,7 +173,7 @@ impl EvaluatedTxOut {
         let address = match self.script.address.clone() {
             Some(address) => address,
             None => {
-                debug!(target: "csvdump", "Unable to evaluate address for utxo in txid: {} ({})", txid, self.script.pattern);
+                log::debug!(target: "csvdump", "Unable to evaluate address for utxo in txid: {} ({})", txid, self.script.pattern);
                 String::new()
             }
         };

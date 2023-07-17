@@ -27,7 +27,7 @@ impl Callback for OpReturn {
     }
 
     fn on_start(&mut self, _: u64) -> OpResult<()> {
-        info!(target: "callback", "Executing OpReturn ...");
+        log::info!(target: "callback", "Executing OpReturn ...");
         Ok(())
     }
 

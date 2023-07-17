@@ -48,7 +48,7 @@ impl ChainIndex {
 
         // Filter to only keep relevant block index
         if !options.range.is_default() {
-            info!(target: "index", "Trimming block index from height {} to {} ...", min_height, max_height);
+            log::info!(target: "index", "Trimming block index from height {} to {} ...", min_height, max_height);
             block_index.retain(|height, _| {
                 *height >= min_height.saturating_sub(1) && *height <= max_height
             });
@@ -128,7 +128,7 @@ impl fmt::Debug for BlockIndexRecord {
 }
 
 pub fn get_block_index(path: &Path) -> OpResult<HashMap<u64, BlockIndexRecord>> {
-    info!(target: "index", "Reading index from {} ...", path.display());
+    log::info!(target: "index", "Reading index from {} ...", path.display());
 
     let mut block_index = HashMap::with_capacity(800000);
     let mut db_iter = DB::open(path, Options::default())?.new_iter()?;
@@ -143,7 +143,7 @@ pub fn get_block_index(path: &Path) -> OpResult<HashMap<u64, BlockIndexRecord>> 
             }
         }
     }
-    info!(target: "index", "Got longest chain with {} blocks ...", block_index.len());
+    log::info!(target: "index", "Got longest chain with {} blocks ...", block_index.len());
     Ok(block_index)
 }
 
