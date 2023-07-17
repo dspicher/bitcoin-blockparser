@@ -3,8 +3,6 @@ use std::convert::From;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use crate::errors::{OpError, OpErrorKind, OpResult};
-
 /// Trait to specify the underlying coin of a blockchain
 /// Needs a proper magic value and a network id for address prefixes
 pub trait Coin {
@@ -94,15 +92,13 @@ impl<T: Coin> From<T> for CoinType {
 }
 
 impl FromStr for CoinType {
-    type Err = OpError;
-    fn from_str(coin_name: &str) -> OpResult<Self> {
+    type Err = anyhow::Error;
+    fn from_str(coin_name: &str) -> anyhow::Result<Self> {
         match coin_name {
             "bitcoin" => Ok(CoinType::from(Bitcoin)),
             "testnet3" => Ok(CoinType::from(TestNet3)),
             n => {
-                let e = OpError::new(OpErrorKind::InvalidArgsError)
-                    .join_msg(&format!("The is no impl for `{}`!", n));
-                Err(e)
+                anyhow::bail!("The is no impl for `{}`!", n);
             }
         }
     }

@@ -4,7 +4,6 @@ use crate::blockchain::parser::blkfile::BlkFile;
 use crate::blockchain::parser::index::ChainIndex;
 use crate::blockchain::parser::types::CoinType;
 use crate::blockchain::proto::block::Block;
-use crate::errors::{OpError, OpErrorKind, OpResult};
 use crate::ParserOptions;
 
 /// Manages the index and data of longest valid chain
@@ -16,7 +15,7 @@ pub struct ChainStorage {
 }
 
 impl ChainStorage {
-    pub fn new(options: &ParserOptions) -> OpResult<Self> {
+    pub fn new(options: &ParserOptions) -> anyhow::Result<Self> {
         Ok(Self {
             chain_index: ChainIndex::new(options)?,
             blk_files: BlkFile::from_path(options.blockchain_dir.as_path())?,
@@ -48,15 +47,15 @@ impl ChainStorage {
 
     /// Verifies the given block in a chain.
     /// Panics if not valid
-    fn verify(&self, block: &Block, height: u64) -> OpResult<()> {
+    fn verify(&self, block: &Block, height: u64) -> anyhow::Result<()> {
         block.verify_merkle_root()?;
         if height == 0 {
             if block.header.hash != self.coin.genesis_hash {
-                let msg = format!(
+                anyhow::bail!(
                     "Genesis block hash doesn't match!\n  -> expected: {}\n  -> got: {}\n",
-                    &self.coin.genesis_hash, &block.header.hash,
+                    &self.coin.genesis_hash,
+                    &block.header.hash,
                 );
-                return Err(OpError::new(OpErrorKind::ValidationError).join_msg(&msg));
             }
         } else {
             let prev_hash = self
@@ -65,11 +64,12 @@ impl ChainStorage {
                 .expect("unable to fetch prev block in chain index")
                 .block_hash;
             if block.header.value.prev_hash != prev_hash {
-                let msg = format!(
+                anyhow::bail!(
                     "prev_hash for block {} doesn't match!\n  -> expected: {}\n  -> got: {}\n",
-                    &block.header.hash, &block.header.value.prev_hash, &prev_hash
+                    &block.header.hash,
+                    &block.header.value.prev_hash,
+                    &prev_hash
                 );
-                return Err(OpError::new(OpErrorKind::ValidationError).join_msg(&msg));
             }
         }
         Ok(())
