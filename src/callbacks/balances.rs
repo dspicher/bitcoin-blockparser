@@ -6,17 +6,14 @@ use std::path::PathBuf;
 use clap::{Arg, ArgMatches, Command};
 
 use crate::blockchain::proto::block::Block;
-use crate::callbacks::{common, Callback};
+use crate::callbacks::Callback;
 use crate::errors::OpResult;
 
 /// Dumps all addresses with non-zero balance in a csv file
 pub struct Balances {
     dump_folder: PathBuf,
     writer: BufWriter<File>,
-
-    // key: txid + index
-    unspents: HashMap<Vec<u8>, common::UnspentValue>,
-
+    unspents: super::UnspentsTracker,
     start_height: u64,
     end_height: u64,
 }
@@ -52,7 +49,7 @@ impl Callback for Balances {
         let cb = Balances {
             dump_folder: PathBuf::from(dump_folder),
             writer: Balances::create_writer(4000000, dump_folder.join("balances.csv.tmp"))?,
-            unspents: HashMap::with_capacity(10000000),
+            unspents: super::UnspentsTracker::new(),
             start_height: 0,
             end_height: 0,
         };
@@ -74,8 +71,8 @@ impl Callback for Balances {
     ///   * address
     fn on_block(&mut self, block: &Block, block_height: u64) -> OpResult<()> {
         for tx in &block.txs {
-            common::remove_unspents(tx, &mut self.unspents);
-            common::insert_unspents(tx, block_height, &mut self.unspents);
+            self.unspents.remove_unspents(tx);
+            self.unspents.insert_unspents(tx, block_height);
         }
         Ok(())
     }
@@ -88,7 +85,7 @@ impl Callback for Balances {
 
         // Collect balances for each address
         let mut balances: HashMap<&str, u64> = HashMap::new();
-        for unspent in self.unspents.values() {
+        for unspent in self.unspents.0.values() {
             let entry = balances.entry(&unspent.address).or_insert(0);
             *entry += unspent.value
         }
