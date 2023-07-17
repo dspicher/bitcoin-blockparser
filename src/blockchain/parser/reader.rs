@@ -5,7 +5,7 @@ use std::io::{self};
 use crate::blockchain::parser::types::CoinType;
 use byteorder::{LittleEndian, ReadBytesExt};
 
-use crate::blockchain::proto::block::{AuxPowExtension, Block};
+use crate::blockchain::proto::block::Block;
 use crate::blockchain::proto::header::BlockHeader;
 use crate::blockchain::proto::tx::{RawTx, TxInput, TxOutpoint, TxOutput};
 use crate::blockchain::proto::varuint::VarUint;
@@ -29,16 +29,9 @@ pub trait BlockchainRead: io::Read {
     /// Reads a block as specified here: https://en.bitcoin.it/wiki/Protocol_specification#block
     fn read_block(&mut self, size: u32, coin: &CoinType) -> OpResult<Block> {
         let header = self.read_block_header()?;
-        // Parse AuxPow data if present
-        let aux_pow_extension = match coin.aux_pow_activation_version {
-            Some(version) if header.version >= version => {
-                Some(self.read_aux_pow_extension(coin.version_id)?)
-            }
-            _ => None,
-        };
         let tx_count = VarUint::read_from(self)?;
         let txs = self.read_txs(tx_count.value, coin.version_id)?;
-        Ok(Block::new(size, header, aux_pow_extension, tx_count, txs))
+        Ok(Block::new(size, header, tx_count, txs))
     }
 
     fn read_block_header(&mut self) -> OpResult<BlockHeader> {
@@ -152,25 +145,6 @@ pub trait BlockchainRead: io::Read {
             .collect::<OpResult<Vec<[u8; 32]>>>()?;
         let side_mask = self.read_u32::<LittleEndian>()?;
         Ok(MerkleBranch::new(hashes, side_mask))
-    }
-
-    /// Reads the additional AuxPow fields as specified here https://en.bitcoin.it/wiki/Merged_mining_specification#Aux_proof-of-work_block
-    fn read_aux_pow_extension(&mut self, version_id: u8) -> OpResult<AuxPowExtension> {
-        let coinbase_tx = self.read_tx(version_id)?;
-        let block_hash = sha256d::Hash::from_byte_array(self.read_256hash()?);
-
-        let coinbase_branch = self.read_merkle_branch()?;
-        let blockchain_branch = self.read_merkle_branch()?;
-
-        let parent_block = self.read_block_header()?;
-
-        Ok(AuxPowExtension {
-            coinbase_tx,
-            block_hash,
-            coinbase_branch,
-            blockchain_branch,
-            parent_block,
-        })
     }
 }
 

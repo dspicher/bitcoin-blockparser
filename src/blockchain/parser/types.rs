@@ -16,10 +16,6 @@ pub trait Coin {
     fn version_id(&self) -> u8;
     // Returns genesis hash
     fn genesis(&self) -> sha256d::Hash;
-    // Activates AuxPow for the returned version and above
-    fn aux_pow_activation_version(&self) -> Option<u32> {
-        None
-    }
     // Default working directory to look for datadir, for example .bitcoin
     fn default_folder(&self) -> PathBuf;
 }
@@ -76,7 +72,6 @@ pub struct CoinType {
     pub magic: u32,
     pub version_id: u8,
     pub genesis_hash: sha256d::Hash,
-    pub aux_pow_activation_version: Option<u32>,
     pub default_folder: PathBuf,
 }
 
@@ -93,7 +88,6 @@ impl<T: Coin> From<T> for CoinType {
             magic: coin.magic(),
             version_id: coin.version_id(),
             genesis_hash: coin.genesis(),
-            aux_pow_activation_version: coin.aux_pow_activation_version(),
             default_folder: coin.default_folder(),
         }
     }
