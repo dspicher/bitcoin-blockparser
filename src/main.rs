@@ -8,7 +8,6 @@ use crate::blockchain::parser::chain::ChainStorage;
 use crate::blockchain::parser::types::{Bitcoin, CoinType};
 use crate::blockchain::parser::BlockchainParser;
 use crate::callbacks::balances::Balances;
-use crate::callbacks::csvdump::CsvDump;
 use crate::callbacks::opreturn::OpReturn;
 use crate::callbacks::simplestats::SimpleStats;
 use crate::callbacks::unspentcsvdump::UnspentCsvDump;
@@ -103,7 +102,6 @@ fn command() -> Command {
         .help("Specify last block for parsing (inclusive) (default: all known blocks)"))
     // Add callbacks
     .subcommand(UnspentCsvDump::build_subcommand())
-    .subcommand(CsvDump::build_subcommand())
     .subcommand(SimpleStats::build_subcommand())
     .subcommand(Balances::build_subcommand())
     .subcommand(OpReturn::build_subcommand())
@@ -167,8 +165,6 @@ fn parse_args(matches: clap::ArgMatches) -> anyhow::Result<ParserOptions> {
     let callback: Box<dyn Callback>;
     if let Some(matches) = matches.subcommand_matches("simplestats") {
         callback = Box::new(SimpleStats::new(matches)?);
-    } else if let Some(matches) = matches.subcommand_matches("csvdump") {
-        callback = Box::new(CsvDump::new(matches)?);
     } else if let Some(matches) = matches.subcommand_matches("unspentcsvdump") {
         callback = Box::new(UnspentCsvDump::new(matches)?);
     } else if let Some(matches) = matches.subcommand_matches("balances") {
@@ -203,12 +199,6 @@ mod tests {
         parse_args(command().get_matches_from([
             "rusty-blockparser",
             "unspentcsvdump",
-            tmp_dir.path().to_str().unwrap(),
-        ]))
-        .unwrap();
-        parse_args(command().get_matches_from([
-            "rusty-blockparser",
-            "csvdump",
             tmp_dir.path().to_str().unwrap(),
         ]))
         .unwrap();

@@ -21,7 +21,6 @@ Usage: rusty-blockparser [OPTIONS] [COMMAND]
 
 Commands:
   unspentcsvdump  Dumps the unspent outputs to CSV file
-  csvdump         Dumps the whole blockchain into CSV files
   simplestats     Shows various Blockchain stats
   balances        Dumps all addresses with non-zero balance to CSV file
   opreturn        Shows embedded OP_RETURN data that is representable as UTF8
@@ -110,7 +109,6 @@ this includes transactions of type P2SH, P2PKH, P2PK, P2WSH, P2WPKH, P2TR, OP_RE
 The required memory usage depends on the used callback:
 
 * simplestats: ~100MB
-* csvdump: ~100M
 * unspentcsvdump: ~18GB
 * balances: ~18GB
 
@@ -137,7 +135,7 @@ Callbacks are built on top of the core parser. They can be implemented to extrac
 
 * `opreturn`: shows transactions with embedded OP_RETURN data that is representable as UTF8.
 
-* `csvdump`: dumps all parsed data as CSV files into the specified `folder`. See [Usage](#Usage) for an example. I chose CSV dumps instead of  an active db-connection because `LOAD DATA INFILE` is the most performant way for bulk inserts.
+ See [Usage](#Usage) for an example. I chose CSV dumps instead of  an active db-connection because `LOAD DATA INFILE` is the most performant way for bulk inserts.
     The files are in the following format:
     ```
     blocks.csv
