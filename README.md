@@ -159,9 +159,6 @@ Callbacks are built on top of the core parser. They can be implemented to extrac
     txid ; indexOut ; height ; value ; scriptPubKey ; address
     ```
     If unclear what some of these fields are, see the [block](https://en.bitcoin.it/wiki/Protocol_documentation#block) and [transaction](https://en.bitcoin.it/wiki/Protocol_documentation#tx) specifications.
-    If you want to insert the files into MySql see [sql/schema.sql](sql/schema.sql).
-    It contains all table structures and SQL statements for bulk inserting. Also see [sql/views.sql](sql/views.sql) for some query examples.
-    NOTE: The total size of the csv dump is at least to 731 GiB (height 635000).
 
 
 * `simplestats`: prints some blockchain statistics like block count, transaction count, avg transactions per block, largest transaction, transaction types etc.
