@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use crate::blockchain::parser::blkfile::BlkFile;
-use crate::blockchain::parser::index::ChainIndex;
-use crate::blockchain::parser::types::CoinType;
+use crate::parser::blkfile::BlkFile;
+use crate::parser::index::ChainIndex;
+use crate::parser::types::CoinType;
 use crate::ParserOptions;
 
 /// Manages the index and data of longest valid chain

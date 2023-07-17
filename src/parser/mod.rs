@@ -1,6 +1,6 @@
 use std::time::{Duration, Instant};
 
-use crate::blockchain::parser::chain::ChainStorage;
+use crate::parser::chain::ChainStorage;
 use crate::callbacks::Callback;
 use crate::ParserOptions;
 

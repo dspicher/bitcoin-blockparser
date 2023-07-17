@@ -4,16 +4,16 @@ use std::fmt;
 use std::path::PathBuf;
 use std::process;
 
-use crate::blockchain::parser::chain::ChainStorage;
-use crate::blockchain::parser::types::{Bitcoin, CoinType};
-use crate::blockchain::parser::BlockchainParser;
+use crate::parser::chain::ChainStorage;
+use crate::parser::types::{Bitcoin, CoinType};
+use crate::parser::BlockchainParser;
 use crate::callbacks::balances::Balances;
 use crate::callbacks::opreturn::OpReturn;
 use crate::callbacks::simplestats::SimpleStats;
 use crate::callbacks::unspentcsvdump::UnspentCsvDump;
 use crate::callbacks::Callback;
 
-pub mod blockchain;
+pub mod parser;
 pub mod callbacks;
 
 #[derive(Copy, Clone)]
