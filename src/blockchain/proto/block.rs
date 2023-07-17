@@ -6,7 +6,7 @@ use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use crate::blockchain::proto::header::BlockHeader;
 use crate::blockchain::proto::tx::{EvaluatedTx, RawTx};
 use crate::blockchain::proto::varuint::VarUint;
-use crate::blockchain::proto::{Hashed, MerkleBranch};
+use crate::blockchain::proto::Hashed;
 use crate::common::utils;
 use crate::errors::{OpError, OpErrorKind, OpResult};
 
@@ -14,19 +14,12 @@ use crate::errors::{OpError, OpErrorKind, OpResult};
 pub struct Block {
     pub size: u32,
     pub header: Hashed<BlockHeader>,
-    pub aux_pow_extension: Option<AuxPowExtension>,
     pub tx_count: VarUint,
     pub txs: Vec<Hashed<EvaluatedTx>>,
 }
 
 impl Block {
-    pub fn new(
-        size: u32,
-        header: BlockHeader,
-        aux_pow_extension: Option<AuxPowExtension>,
-        tx_count: VarUint,
-        txs: Vec<RawTx>,
-    ) -> Block {
+    pub fn new(size: u32, header: BlockHeader, tx_count: VarUint, txs: Vec<RawTx>) -> Block {
         let txs = txs
             .into_par_iter()
             .map(|raw| Hashed::double_sha256(EvaluatedTx::from(raw)))
@@ -34,7 +27,6 @@ impl Block {
         Block {
             size,
             header: Hashed::double_sha256(header),
-            aux_pow_extension,
             tx_count,
             txs,
         }
@@ -74,16 +66,6 @@ impl fmt::Debug for Block {
             .field("tx_count", &self.tx_count)
             .finish()
     }
-}
-
-/// This is used to prove work on the auxiliary blockchain,
-/// see https://en.bitcoin.it/wiki/Merged_mining_specification
-pub struct AuxPowExtension {
-    pub coinbase_tx: RawTx,
-    pub block_hash: sha256d::Hash,
-    pub coinbase_branch: MerkleBranch,
-    pub blockchain_branch: MerkleBranch,
-    pub parent_block: BlockHeader,
 }
 
 /// Get block reward for given height
