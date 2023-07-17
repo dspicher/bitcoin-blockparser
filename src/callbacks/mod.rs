@@ -8,7 +8,6 @@ use crate::blockchain::proto::ToRaw;
 use crate::blockchain::proto::block::Block;
 
 pub mod balances;
-pub mod csvdump;
 pub mod opreturn;
 pub mod simplestats;
 pub mod unspentcsvdump;
