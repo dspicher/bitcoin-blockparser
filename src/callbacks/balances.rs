@@ -7,7 +7,6 @@ use clap::{Arg, ArgMatches, Command};
 
 use crate::blockchain::proto::block::Block;
 use crate::callbacks::Callback;
-use crate::errors::OpResult;
 
 /// Dumps all addresses with non-zero balance in a csv file
 pub struct Balances {
@@ -19,7 +18,7 @@ pub struct Balances {
 }
 
 impl Balances {
-    fn create_writer(cap: usize, path: PathBuf) -> OpResult<BufWriter<File>> {
+    fn create_writer(cap: usize, path: PathBuf) -> anyhow::Result<BufWriter<File>> {
         Ok(BufWriter::with_capacity(cap, File::create(path)?))
     }
 }
@@ -41,7 +40,7 @@ impl Callback for Balances {
             )
     }
 
-    fn new(matches: &ArgMatches) -> OpResult<Self>
+    fn new(matches: &ArgMatches) -> anyhow::Result<Self>
     where
         Self: Sized,
     {
@@ -56,7 +55,7 @@ impl Callback for Balances {
         Ok(cb)
     }
 
-    fn on_start(&mut self, block_height: u64) -> OpResult<()> {
+    fn on_start(&mut self, block_height: u64) -> anyhow::Result<()> {
         self.start_height = block_height;
         log::info!(target: "callback", "Executing balances with dump folder: {} ...", &self.dump_folder.display());
         Ok(())
@@ -69,7 +68,7 @@ impl Callback for Balances {
     ///   * block height as "last modified"
     ///   * output_val
     ///   * address
-    fn on_block(&mut self, block: &Block, block_height: u64) -> OpResult<()> {
+    fn on_block(&mut self, block: &Block, block_height: u64) -> anyhow::Result<()> {
         for tx in &block.txs {
             self.unspents.remove_unspents(tx);
             self.unspents.insert_unspents(tx, block_height);
@@ -77,7 +76,7 @@ impl Callback for Balances {
         Ok(())
     }
 
-    fn on_complete(&mut self, block_height: u64) -> OpResult<()> {
+    fn on_complete(&mut self, block_height: u64) -> anyhow::Result<()> {
         self.end_height = block_height;
 
         self.writer

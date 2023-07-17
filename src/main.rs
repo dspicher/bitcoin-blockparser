@@ -14,10 +14,7 @@ use crate::callbacks::simplestats::SimpleStats;
 use crate::callbacks::unspentcsvdump::UnspentCsvDump;
 use crate::callbacks::Callback;
 use crate::common::utils;
-use crate::errors::{OpError, OpResult};
 
-#[macro_use]
-pub mod errors;
 pub mod blockchain;
 pub mod common;
 #[macro_use]
@@ -31,11 +28,9 @@ pub struct BlockHeightRange {
 }
 
 impl BlockHeightRange {
-    pub fn new(start: u64, end: Option<u64>) -> OpResult<Self> {
+    pub fn new(start: u64, end: Option<u64>) -> anyhow::Result<Self> {
         if end.is_some() && start >= end.unwrap() {
-            return Err(OpError::from(String::from(
-                "--start value must be lower than --end value",
-            )));
+            anyhow::bail!("--start value must be lower than --end value",);
         }
         Ok(Self { start, end })
     }
@@ -154,7 +149,7 @@ fn main() {
 }
 
 /// Parses args or panics if some requirements are not met.
-fn parse_args(matches: clap::ArgMatches) -> OpResult<ParserOptions> {
+fn parse_args(matches: clap::ArgMatches) -> anyhow::Result<ParserOptions> {
     let verify = matches.get_flag("verify");
 
     let coin = matches

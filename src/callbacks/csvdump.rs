@@ -9,7 +9,6 @@ use crate::blockchain::proto::tx::{EvaluatedTx, EvaluatedTxOut, TxInput};
 use crate::blockchain::proto::Hashed;
 use crate::callbacks::Callback;
 use crate::common::utils;
-use crate::errors::OpResult;
 
 /// Dumps the whole blockchain into csv files
 pub struct CsvDump {
@@ -27,7 +26,7 @@ pub struct CsvDump {
 }
 
 impl CsvDump {
-    fn create_writer(cap: usize, path: PathBuf) -> OpResult<BufWriter<File>> {
+    fn create_writer(cap: usize, path: PathBuf) -> anyhow::Result<BufWriter<File>> {
         Ok(BufWriter::with_capacity(cap, File::create(path)?))
     }
 }
@@ -49,7 +48,7 @@ impl Callback for CsvDump {
             )
     }
 
-    fn new(matches: &ArgMatches) -> OpResult<Self>
+    fn new(matches: &ArgMatches) -> anyhow::Result<Self>
     where
         Self: Sized,
     {
@@ -69,13 +68,13 @@ impl Callback for CsvDump {
         Ok(cb)
     }
 
-    fn on_start(&mut self, block_height: u64) -> OpResult<()> {
+    fn on_start(&mut self, block_height: u64) -> anyhow::Result<()> {
         self.start_height = block_height;
         log::info!(target: "callback", "Executing csvdump with dump folder: {} ...", &self.dump_folder.display());
         Ok(())
     }
 
-    fn on_block(&mut self, block: &Block, block_height: u64) -> OpResult<()> {
+    fn on_block(&mut self, block: &Block, block_height: u64) -> anyhow::Result<()> {
         // serialize block
         self.block_writer
             .write_all(block.as_csv(block_height).as_bytes())?;
@@ -105,7 +104,7 @@ impl Callback for CsvDump {
         Ok(())
     }
 
-    fn on_complete(&mut self, block_height: u64) -> OpResult<()> {
+    fn on_complete(&mut self, block_height: u64) -> anyhow::Result<()> {
         // Keep in sync with c'tor
         for f in ["blocks", "transactions", "tx_in", "tx_out"] {
             // Rename temp files

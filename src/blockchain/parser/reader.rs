@@ -10,31 +10,30 @@ use crate::blockchain::proto::header::BlockHeader;
 use crate::blockchain::proto::tx::{RawTx, TxInput, TxOutpoint, TxOutput};
 use crate::blockchain::proto::varuint::VarUint;
 use crate::blockchain::proto::MerkleBranch;
-use crate::errors::OpResult;
 
 /// Trait for structured reading of blockchain data
 pub trait BlockchainRead: io::Read {
-    fn read_256hash(&mut self) -> OpResult<[u8; 32]> {
+    fn read_256hash(&mut self) -> anyhow::Result<[u8; 32]> {
         let mut arr = [0u8; 32];
         self.read_exact(arr.borrow_mut())?;
         Ok(arr)
     }
 
-    fn read_u8_vec(&mut self, count: u32) -> OpResult<Vec<u8>> {
+    fn read_u8_vec(&mut self, count: u32) -> anyhow::Result<Vec<u8>> {
         let mut arr = vec![0u8; count as usize];
         self.read_exact(arr.borrow_mut())?;
         Ok(arr)
     }
 
     /// Reads a block as specified here: https://en.bitcoin.it/wiki/Protocol_specification#block
-    fn read_block(&mut self, size: u32, coin: &CoinType) -> OpResult<Block> {
+    fn read_block(&mut self, size: u32, coin: &CoinType) -> anyhow::Result<Block> {
         let header = self.read_block_header()?;
         let tx_count = VarUint::read_from(self)?;
         let txs = self.read_txs(tx_count.value, coin.version_id)?;
         Ok(Block::new(size, header, tx_count, txs))
     }
 
-    fn read_block_header(&mut self) -> OpResult<BlockHeader> {
+    fn read_block_header(&mut self) -> anyhow::Result<BlockHeader> {
         let version = self.read_u32::<LittleEndian>()?;
         let prev_hash = sha256d::Hash::from_byte_array(self.read_256hash()?);
         let merkle_root = sha256d::Hash::from_byte_array(self.read_256hash()?);
@@ -52,12 +51,12 @@ pub trait BlockchainRead: io::Read {
         })
     }
 
-    fn read_txs(&mut self, tx_count: u64, version_id: u8) -> OpResult<Vec<RawTx>> {
+    fn read_txs(&mut self, tx_count: u64, version_id: u8) -> anyhow::Result<Vec<RawTx>> {
         (0..tx_count).map(|_| self.read_tx(version_id)).collect()
     }
 
     /// Reads a transaction as specified here: https://en.bitcoin.it/wiki/Protocol_specification#tx
-    fn read_tx(&mut self, version_id: u8) -> OpResult<RawTx> {
+    fn read_tx(&mut self, version_id: u8) -> anyhow::Result<RawTx> {
         let mut flags = 0u8;
         let version = self.read_u32::<LittleEndian>()?;
 
@@ -97,14 +96,14 @@ pub trait BlockchainRead: io::Read {
         Ok(tx)
     }
 
-    fn read_tx_outpoint(&mut self) -> OpResult<TxOutpoint> {
+    fn read_tx_outpoint(&mut self) -> anyhow::Result<TxOutpoint> {
         let txid = sha256d::Hash::from_byte_array(self.read_256hash()?);
         let index = self.read_u32::<LittleEndian>()?;
 
         Ok(TxOutpoint { txid, index })
     }
 
-    fn read_tx_inputs(&mut self, input_count: u64) -> OpResult<Vec<TxInput>> {
+    fn read_tx_inputs(&mut self, input_count: u64) -> anyhow::Result<Vec<TxInput>> {
         let mut inputs = Vec::with_capacity(input_count as usize);
         for _ in 0..input_count {
             let outpoint = self.read_tx_outpoint()?;
@@ -121,7 +120,7 @@ pub trait BlockchainRead: io::Read {
         Ok(inputs)
     }
 
-    fn read_tx_outputs(&mut self, output_count: u64) -> OpResult<Vec<TxOutput>> {
+    fn read_tx_outputs(&mut self, output_count: u64) -> anyhow::Result<Vec<TxOutput>> {
         let mut outputs = Vec::with_capacity(output_count as usize);
         for _ in 0..output_count {
             let value = self.read_u64::<LittleEndian>()?;
@@ -138,11 +137,11 @@ pub trait BlockchainRead: io::Read {
 
     /// Reads a merkle branch as specified here https://en.bitcoin.it/wiki/Merged_mining_specification#Merkle_Branch
     /// This is mainly used for merged mining (AuxPoW).
-    fn read_merkle_branch(&mut self) -> OpResult<MerkleBranch> {
+    fn read_merkle_branch(&mut self) -> anyhow::Result<MerkleBranch> {
         let branch_length = VarUint::read_from(self)?;
         let hashes = (0..branch_length.value)
             .map(|_| self.read_256hash())
-            .collect::<OpResult<Vec<[u8; 32]>>>()?;
+            .collect::<anyhow::Result<Vec<[u8; 32]>>>()?;
         let side_mask = self.read_u32::<LittleEndian>()?;
         Ok(MerkleBranch::new(hashes, side_mask))
     }

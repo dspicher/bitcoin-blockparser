@@ -4,13 +4,13 @@ use std::fs::{self, DirEntry, File};
 use std::io::{self, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 
+use anyhow::Context;
 use byteorder::{LittleEndian, ReadBytesExt};
 use seek_bufread::BufReader;
 
 use crate::blockchain::parser::reader::BlockchainRead;
 use crate::blockchain::parser::types::CoinType;
 use crate::blockchain::proto::block::Block;
-use crate::errors::{OpError, OpErrorKind, OpResult};
 
 /// Holds all necessary data about a raw blk file
 #[derive(Debug)]
@@ -30,7 +30,7 @@ impl BlkFile {
     }
 
     /// Opens the file handle (does nothing if the file has been opened already)
-    fn open(&mut self) -> OpResult<&mut BufReader<File>> {
+    fn open(&mut self) -> anyhow::Result<&mut BufReader<File>> {
         if self.reader.is_none() {
             log::debug!(target: "blkfile", "Opening {} ...", &self.path.display());
             self.reader = Some(BufReader::new(File::open(&self.path)?));
@@ -46,7 +46,7 @@ impl BlkFile {
         }
     }
 
-    pub fn read_block(&mut self, offset: u64, coin: &CoinType) -> OpResult<Block> {
+    pub fn read_block(&mut self, offset: u64, coin: &CoinType) -> anyhow::Result<Block> {
         let reader = self.open()?;
         reader.seek(SeekFrom::Start(offset - 4))?;
         let block_size = reader.read_u32::<LittleEndian>()?;
@@ -54,7 +54,7 @@ impl BlkFile {
     }
 
     /// Collects all blk*.dat paths in the given directory
-    pub fn from_path(path: &Path) -> OpResult<HashMap<u64, BlkFile>> {
+    pub fn from_path(path: &Path) -> anyhow::Result<HashMap<u64, BlkFile>> {
         log::info!(target: "blkfile", "Reading files from {} ...", path.display());
         let mut collected = HashMap::with_capacity(4000);
 
@@ -66,8 +66,13 @@ impl BlkFile {
                         continue;
                     }
 
-                    let file_name =
-                        String::from(transform!(path.as_path().file_name().unwrap().to_str()));
+                    let file_name = String::from(
+                        path.as_path()
+                            .file_name()
+                            .unwrap()
+                            .to_str()
+                            .context("invalid path")?,
+                    );
                     // Check if it's a valid blk file
                     if let Some(index) = BlkFile::parse_blk_index(&file_name, "blk", ".dat") {
                         // Build BlkFile structures
@@ -84,7 +89,7 @@ impl BlkFile {
 
         log::trace!(target: "blkfile", "Found {} blk files", collected.len());
         if collected.is_empty() {
-            Err(OpError::new(OpErrorKind::RuntimeError).join_msg("No blk files found!"))
+            Err(anyhow::anyhow!("No blk files found!"))
         } else {
             Ok(collected)
         }
