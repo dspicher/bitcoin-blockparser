@@ -84,16 +84,7 @@ pub struct ParserOptions {
 }
 
 fn command() -> Command {
-    let coins = [
-        "bitcoin",
-        "testnet3",
-        "namecoin",
-        "litecoin",
-        "dogecoin",
-        "myriadcoin",
-        "unobtanium",
-        "noteblockchain",
-    ];
+    let coins = ["bitcoin", "testnet3"];
     Command::new("rusty-blockparser")
     .version(crate_version!())
     // Add flags
@@ -269,10 +260,6 @@ mod tests {
         let args = ["rusty-blockparser", "-c", "testnet3", "simplestats"];
         let options = parse_args(command().get_matches_from(args)).unwrap();
         assert_eq!(options.coin.name, "TestNet3");
-
-        let args = ["rusty-blockparser", "--coin", "namecoin", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.coin.name, "Namecoin");
     }
 
     #[test]
