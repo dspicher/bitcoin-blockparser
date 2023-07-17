@@ -1,10 +1,14 @@
 use clap::{ArgMatches, Command};
 
+use crate::blockchain::proto::tx::EvaluatedTx;
+use crate::blockchain::proto::tx::TxOutpoint;
+use crate::blockchain::proto::Hashed;
+use crate::blockchain::proto::ToRaw;
+
 use crate::blockchain::proto::block::Block;
 use crate::errors::OpResult;
 
 pub mod balances;
-mod common;
 pub mod csvdump;
 pub mod opreturn;
 pub mod simplestats;
@@ -37,5 +41,57 @@ pub trait Callback {
     /// Can be used to toggle whether the progress should be shown for specific callbacks or not
     fn show_progress(&self) -> bool {
         true
+    }
+}
+
+pub struct UnspentValue {
+    pub block_height: u64,
+    pub value: u64,
+    pub address: String,
+}
+
+pub struct UnspentsTracker(std::collections::HashMap<Vec<u8>, UnspentValue>);
+
+impl UnspentsTracker {
+    pub fn new() -> Self {
+        Self(std::collections::HashMap::with_capacity(10000000))
+    }
+    /// Iterates over transaction inputs and removes spent outputs from HashMap.
+    /// Returns the total number of processed inputs.
+    pub fn remove_unspents(&mut self, tx: &Hashed<EvaluatedTx>) -> u64 {
+        for input in &tx.value.inputs {
+            let key = input.outpoint.to_bytes();
+            self.0.remove(&key);
+        }
+        tx.value.in_count.value
+    }
+
+    /// Iterates over transaction outputs and adds valid unspents to HashMap.
+    /// Returns the total number of valid outputs.
+    pub fn insert_unspents(&mut self, tx: &Hashed<EvaluatedTx>, block_height: u64) -> u64 {
+        let mut count = 0;
+        for (i, output) in tx.value.outputs.iter().enumerate() {
+            match &output.script.address {
+                Some(address) => {
+                    let unspent = UnspentValue {
+                        block_height,
+                        address: address.clone(),
+                        value: output.out.value,
+                    };
+
+                    let key = TxOutpoint::new(tx.hash, i as u32).to_bytes();
+                    self.0.insert(key, unspent);
+                    count += 1;
+                }
+                None => {
+                    log::debug!(
+                        target: "callback", "Ignoring invalid utxo in: {} ({})",
+                        &tx.hash,
+                        output.script.pattern
+                    );
+                }
+            }
+        }
+        count
     }
 }

@@ -1,5 +1,4 @@
 use bitcoin::hashes::{sha256d, Hash};
-use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
@@ -8,17 +7,14 @@ use byteorder::{LittleEndian, ReadBytesExt};
 use clap::{Arg, ArgMatches, Command};
 
 use crate::blockchain::proto::block::Block;
-use crate::callbacks::{common, Callback};
+use crate::callbacks::Callback;
 use crate::errors::OpResult;
 
 /// Dumps the UTXOs along with address in a csv file
 pub struct UnspentCsvDump {
     dump_folder: PathBuf,
     writer: BufWriter<File>,
-
-    // key: txid + index
-    unspents: HashMap<Vec<u8>, common::UnspentValue>,
-
+    unspents: super::UnspentsTracker,
     start_height: u64,
     tx_count: u64,
     in_count: u64,
@@ -56,7 +52,7 @@ impl Callback for UnspentCsvDump {
         let cb = UnspentCsvDump {
             dump_folder: PathBuf::from(dump_folder),
             writer: UnspentCsvDump::create_writer(4000000, dump_folder.join("unspent.csv.tmp"))?,
-            unspents: HashMap::with_capacity(10000000),
+            unspents: super::UnspentsTracker::new(),
             start_height: 0,
             tx_count: 0,
             in_count: 0,
@@ -80,8 +76,8 @@ impl Callback for UnspentCsvDump {
     ///   * address
     fn on_block(&mut self, block: &Block, block_height: u64) -> OpResult<()> {
         for tx in &block.txs {
-            self.in_count += common::remove_unspents(tx, &mut self.unspents);
-            self.out_count += common::insert_unspents(tx, block_height, &mut self.unspents);
+            self.in_count += self.unspents.remove_unspents(tx);
+            self.out_count += self.unspents.insert_unspents(tx, block_height);
         }
         self.tx_count += block.tx_count.value;
         Ok(())
@@ -95,7 +91,7 @@ impl Callback for UnspentCsvDump {
             )
             .as_bytes(),
         )?;
-        for (key, value) in self.unspents.iter() {
+        for (key, value) in self.unspents.0.iter() {
             let txid = sha256d::Hash::from_slice(&key[0..32]).unwrap();
             let mut index = &key[32..];
             self.writer.write_all(
