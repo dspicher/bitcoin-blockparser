@@ -140,7 +140,7 @@ pub fn eval_from_bytes_bitcoin(bytes: &[u8], version_id: u8) -> EvaluatedScript 
         Ok(address) => Some(format!("{}", address)),
         Err(err) => {
             if err != address::Error::UnrecognizedScript {
-                warn!(target: "script", "Unable to extract evaluated address: {}", err)
+                log::warn!(target: "script", "Unable to extract evaluated address: {}", err)
             }
             None
         }
@@ -175,7 +175,7 @@ fn p2pk_to_string(script: &Script, network: Network) -> Option<String> {
     let pk = match script.instructions().next() {
         Some(Ok(Instruction::PushBytes(bytes))) => bytes,
         Some(Err(msg)) => {
-            warn!(target: "script", "Unable to parse address from p2pk script: {}", msg);
+            log::warn!(target: "script", "Unable to parse address from p2pk script: {}", msg);
             return None;
         }
         _ => unreachable!(),

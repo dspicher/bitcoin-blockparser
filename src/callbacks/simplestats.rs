@@ -200,7 +200,7 @@ impl Callback for SimpleStats {
     }
 
     fn on_start(&mut self, _: u64) -> OpResult<()> {
-        info!(target: "callback", "Executing simplestats ...");
+        log::info!(target: "callback", "Executing simplestats ...");
         Ok(())
     }
 
@@ -263,7 +263,7 @@ impl Callback for SimpleStats {
         self.print_averages(&mut buffer)?;
         writeln!(&mut buffer)?;
         self.print_transaction_types(&mut buffer)?;
-        info!(target: "simplestats", "\n\n{}", String::from_utf8_lossy(&buffer));
+        log::info!(target: "simplestats", "\n\n{}", String::from_utf8_lossy(&buffer));
         Ok(())
     }
 }

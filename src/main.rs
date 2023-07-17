@@ -18,17 +18,6 @@ use crate::common::utils;
 use crate::errors::{OpError, OpResult};
 
 #[macro_use]
-extern crate log;
-extern crate chrono;
-#[macro_use]
-extern crate clap;
-extern crate bitcoin;
-extern crate byteorder;
-extern crate rayon;
-extern crate rusty_leveldb;
-extern crate seek_bufread;
-
-#[macro_use]
 pub mod errors;
 pub mod blockchain;
 pub mod common;
@@ -86,7 +75,7 @@ pub struct ParserOptions {
 fn command() -> Command {
     let coins = ["bitcoin", "testnet3"];
     Command::new("rusty-blockparser")
-    .version(crate_version!())
+    .version(clap::crate_version!())
     // Add flags
     .arg(Arg::new("verify")
         .long("verify")
@@ -134,7 +123,7 @@ fn main() {
         Err(desc) => {
             // Init logger to print outstanding error message
             SimpleLogger::init(log::LevelFilter::Debug).unwrap();
-            error!(target: "main", "{}", desc);
+            log::error!(target: "main", "{}", desc);
             process::exit(1);
         }
     };
@@ -142,16 +131,16 @@ fn main() {
     // Apply log filter based on verbosity
     let log_level = options.log_level_filter;
     SimpleLogger::init(log_level).expect("Unable to initialize logger!");
-    info!(target: "main", "Starting rusty-blockparser v{} ...", env!("CARGO_PKG_VERSION"));
-    debug!(target: "main", "Using log level {}", log_level);
+    log::info!(target: "main", "Starting rusty-blockparser v{} ...", env!("CARGO_PKG_VERSION"));
+    log::debug!(target: "main", "Using log level {}", log_level);
     if options.verify {
-        info!(target: "main", "Configured to verify merkle roots and block hashes");
+        log::info!(target: "main", "Configured to verify merkle roots and block hashes");
     }
 
     let chain_storage = match ChainStorage::new(&options) {
         Ok(storage) => storage,
         Err(e) => {
-            error!(
+            log::error!(
                 target: "main",
                 "Cannot load blockchain data from: '{}'. {}",
                 options.blockchain_dir.display(),
@@ -163,9 +152,9 @@ fn main() {
 
     let mut parser = BlockchainParser::new(options, chain_storage);
     match parser.start() {
-        Ok(_) => info!(target: "main", "Fin."),
+        Ok(_) => log::info!(target: "main", "Fin."),
         Err(why) => {
-            error!("{}", why);
+            log::error!("{}", why);
             process::exit(1);
         }
     }

@@ -46,7 +46,7 @@ pub fn insert_unspents(
                 count += 1;
             }
             None => {
-                debug!(
+                log::debug!(
                     target: "callback", "Ignoring invalid utxo in: {} ({})",
                     &tx.hash,
                     output.script.pattern
