@@ -129,7 +129,7 @@ impl fmt::Debug for BlockIndexRecord {
 pub fn get_block_index(path: &Path) -> anyhow::Result<HashMap<u64, BlockIndexRecord>> {
     log::info!(target: "index", "Reading index from {} ...", path.display());
 
-    let mut block_index = HashMap::with_capacity(800000);
+    let mut block_index = HashMap::with_capacity(800_000);
     let mut db_iter = DB::open(path, Options::default())?.new_iter()?;
     let (mut key, mut value) = (vec![], vec![]);
 
@@ -157,14 +157,10 @@ fn read_varint(reader: &mut Cursor<&[u8]>) -> anyhow::Result<u64> {
     let mut n = 0;
     loop {
         let ch_data = reader.read_u8()?;
-        if n > u64::MAX >> 7 {
-            panic!("size too large");
-        }
-        n = (n << 7) | (ch_data & 0x7F) as u64;
+        assert!(n <= u64::MAX >> 7, "size too large");
+        n = (n << 7) | u64::from(ch_data & 0x7F);
         if ch_data & 0x80 > 0 {
-            if n == u64::MAX {
-                panic!("size too large");
-            }
+            assert!(n != u64::MAX, "size too large");
             n += 1;
         } else {
             break;

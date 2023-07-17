@@ -29,7 +29,7 @@ impl Coin for Bitcoin {
         String::from("Bitcoin")
     }
     fn magic(&self) -> u32 {
-        0xd9b4bef9
+        0xd9b4_bef9
     }
     fn version_id(&self) -> u8 {
         0x00
@@ -49,7 +49,7 @@ impl Coin for TestNet3 {
         String::from("TestNet3")
     }
     fn magic(&self) -> u32 {
-        0x0709110b
+        0x0709_110b
     }
     fn version_id(&self) -> u8 {
         0x6f

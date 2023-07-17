@@ -1,7 +1,7 @@
 use std::time::{Duration, Instant};
 
-use crate::parser::chain::ChainStorage;
 use crate::callbacks::Callback;
+use crate::parser::chain::ChainStorage;
 use crate::ParserOptions;
 
 mod blkfile;
@@ -38,6 +38,7 @@ pub struct BlockchainParser {
 
 impl BlockchainParser {
     /// Instantiates a new Parser.
+    #[must_use]
     pub fn new(options: ParserOptions, chain_storage: ChainStorage) -> Self {
         log::info!(target: "parser", "Parsing {} blockchain ...", options.coin.name);
         Self {
@@ -60,6 +61,7 @@ impl BlockchainParser {
     }
 
     /// Returns number of remaining blocks
+    #[must_use]
     pub fn remaining(&self) -> u64 {
         self.chain_storage
             .max_height()
@@ -90,7 +92,7 @@ impl BlockchainParser {
     /// Triggers the on_complete() callback and updates statistics.
     fn on_complete(&mut self, height: u64) -> anyhow::Result<()> {
         log::info!(target: "parser", "Done. Processed blocks up to height {} in {:.2} minutes.",
-        height, (Instant::now() - self.stats.started_at).as_secs_f32() / 60.0);
+        height, self.stats.started_at.elapsed().as_secs_f32() / 60.0);
 
         self.callback.on_complete(height)?;
         log::trace!(target: "parser", "on_complete() called");
