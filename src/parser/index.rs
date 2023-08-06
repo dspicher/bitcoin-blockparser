@@ -126,7 +126,7 @@ pub fn get_block_index(
 ) -> anyhow::Result<std::collections::HashMap<u64, BlockIndexRecord>> {
     log::info!(target: "index", "Reading index from {} ...", path.display());
 
-    let mut block_index = std::collections::HashMap::with_capacity(800_000);
+    let mut block_index = std::collections::HashMap::with_capacity(1_000_000);
     let mut db_iter = DB::open(path, Options::default())?.new_iter()?;
     let (mut key, mut value) = (vec![], vec![]);
 
