@@ -81,7 +81,7 @@ impl UnspentsTracker {
                     count += 1;
                 }
                 Err(_) => {
-                    log::debug!(
+                    tracing::debug!(
                         target: "callback", "Ignoring invalid utxo in: {}",
                         tx.txid(),
                     );

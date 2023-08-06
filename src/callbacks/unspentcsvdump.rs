@@ -57,7 +57,7 @@ impl crate::callbacks::Callback for UnspentCsvDump {
 
     fn on_start(&mut self, block_height: u64) -> anyhow::Result<()> {
         self.start_height = block_height;
-        log::info!(target: "callback", "Executing unspentcsvdump with dump folder: {} ...", &self.dump_folder.display());
+        tracing::info!(target: "callback", "Executing unspentcsvdump with dump folder: {} ...", &self.dump_folder.display());
         Ok(())
     }
 
@@ -103,7 +103,7 @@ impl crate::callbacks::Callback for UnspentCsvDump {
             )),
         )?;
 
-        log::info!(target: "callback", "Done.\nDumped blocks from height {} to {}:\n\
+        tracing::info!(target: "callback", "Done.\nDumped blocks from height {} to {}:\n\
                                    \t-> transactions: {:9}\n\
                                    \t-> inputs:       {:9}\n\
                                    \t-> outputs:      {:9}",
