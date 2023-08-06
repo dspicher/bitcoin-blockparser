@@ -1,9 +1,2 @@
 target
-.cargo
 csvdump
-.project
-.idea
-
-scripts/
-debug.sh
-dump/
