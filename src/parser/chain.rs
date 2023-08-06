@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::parser::blkfile::BlkFile;
 use crate::parser::index::ChainIndex;
 use crate::parser::types::CoinType;
@@ -8,7 +6,7 @@ use crate::ParserOptions;
 /// Manages the index and data of longest valid chain
 pub struct ChainStorage {
     chain_index: ChainIndex,
-    blk_files: HashMap<u64, BlkFile>, // maps blk_index to BlkFile
+    blk_files: std::collections::HashMap<u64, BlkFile>, // maps blk_index to BlkFile
     coin: CoinType,
     verify: bool,
 }

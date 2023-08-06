@@ -1,6 +1,6 @@
 use bitcoin::hashes::{sha256d, Hash};
 use std::collections::HashMap;
-use std::io::{self, Write};
+use std::io::Write;
 
 use clap::{ArgMatches, Command};
 
@@ -70,7 +70,7 @@ impl SimpleStats {
         }
     }
 
-    fn print_simple_stats(&self, buffer: &mut Vec<u8>) -> io::Result<()> {
+    fn print_simple_stats(&self, buffer: &mut Vec<u8>) -> std::io::Result<()> {
         writeln!(buffer, "SimpleStats:")?;
         writeln!(buffer, "   -> valid blocks:\t\t{}", self.n_valid_blocks)?;
         writeln!(buffer, "   -> total transactions:\t{}", self.n_tx)?;
@@ -91,7 +91,7 @@ impl SimpleStats {
         Ok(())
     }
 
-    fn print_averages(&self, buffer: &mut Vec<u8>) -> io::Result<()> {
+    fn print_averages(&self, buffer: &mut Vec<u8>) -> std::io::Result<()> {
         writeln!(buffer, "Averages:")?;
         writeln!(
             buffer,
@@ -128,7 +128,7 @@ impl SimpleStats {
         Ok(())
     }
 
-    fn print_unusual_transactions(&self, buffer: &mut Vec<u8>) -> io::Result<()> {
+    fn print_unusual_transactions(&self, buffer: &mut Vec<u8>) -> std::io::Result<()> {
         let (value, height, txid) = self.tx_biggest_value;
         writeln!(
             buffer,
@@ -151,7 +151,7 @@ impl SimpleStats {
         Ok(())
     }
 
-    fn print_transaction_types(&self, buffer: &mut Vec<u8>) -> io::Result<()> {
+    fn print_transaction_types(&self, buffer: &mut Vec<u8>) -> std::io::Result<()> {
         writeln!(buffer, "Transaction Types:")?;
         for (pattern, count) in &self.n_tx_types {
             writeln!(

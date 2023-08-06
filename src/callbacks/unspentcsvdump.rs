@@ -1,10 +1,8 @@
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
 use clap::{Arg, ArgMatches, Command};
-
-use crate::callbacks::Callback;
 
 /// Dumps the UTXOs along with address in a csv file
 pub struct UnspentCsvDump {
@@ -23,7 +21,7 @@ impl UnspentCsvDump {
     }
 }
 
-impl Callback for UnspentCsvDump {
+impl crate::callbacks::Callback for UnspentCsvDump {
     fn build_subcommand() -> Command
     where
         Self: Sized,
@@ -97,7 +95,7 @@ impl Callback for UnspentCsvDump {
             )?;
         }
 
-        fs::rename(
+        std::fs::rename(
             self.dump_folder.as_path().join("unspent.csv.tmp"),
             self.dump_folder.as_path().join(format!(
                 "unspent-{}-{}.csv",
