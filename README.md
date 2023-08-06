@@ -1,5 +1,9 @@
 # bitcoin-blockparser
 
+[<img alt="build status" src="https://img.shields.io/github/actions/workflow/status/dspicher/bitcoin-blockparser/rust.yml?branch=master&logo=github" height="20">](https://github.com/dspicher/bitcoin-blockparser/actions)
+[<img alt="build status" src="https://img.shields.io/codecov/c/gh/dspicher/bitcoin-blockparser?logo=codecov" height="20">](https://codecov.io/gh/dspicher/bitcoin-blockparser)
+[![dependency status](https://deps.rs/repo/github/dspicher/bitcoin-blockparser/status.svg)](https://deps.rs/repo/github/dspicher/bitcoin-blockparser)
+
 bitcoin-blockparser is a Bitcoin Blockchain Parser written in **Rust language**.
 
 It allows extraction of various data types (blocks, transactions, scripts, public keys/hashes, balances, ...)
