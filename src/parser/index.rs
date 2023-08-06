@@ -1,6 +1,7 @@
+use std::io::Read;
+
 use bitcoin::hashes::{sha256d, Hash};
 
-use byteorder::ReadBytesExt;
 use rusty_leveldb::{LdbIterator, Options, DB};
 
 use crate::ParserOptions;
@@ -153,7 +154,9 @@ fn is_block_index_record(data: &[u8]) -> bool {
 fn read_varint(reader: &mut std::io::Cursor<&[u8]>) -> anyhow::Result<u64> {
     let mut n = 0;
     loop {
-        let ch_data = reader.read_u8()?;
+        let mut buf = [0; 1];
+        reader.read_exact(&mut buf)?;
+        let ch_data = buf[0];
         assert!(n <= u64::MAX >> 7, "size too large");
         n = (n << 7) | u64::from(ch_data & 0x7F);
         if ch_data & 0x80 > 0 {
