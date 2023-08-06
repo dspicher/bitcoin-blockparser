@@ -2,11 +2,9 @@
 name = "bitcoin-blockparser"
 version = "0.11.0"
 authors = ["Dominik Spicher <dominikspicher@gmail.com>", "gcarq <egger.m@protonmail.com>"]
-include = ["src/*", "LICENSE", "README.md", "Cargo.toml"]
 description = "Bitcoin Blockchain Parser"
 documentation = "https://github.com/dspicher/bitcoin-blockparser/blob/master/README.md"
 homepage = "https://github.com/dspicher/bitcoin-blockparser/"
-readme = "README.md"
 keywords = ["Cryptocurrency", "Bitcoin", "Blockchain", "Parser"]
 license = "GPL-3.0"
 edition = "2021"
