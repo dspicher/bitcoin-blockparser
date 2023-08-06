@@ -515,9 +515,9 @@ dependencies = [
 
 [[package]]
 name = "rusty-leveldb"
-version = "1.0.8"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf78fa8e2741733b7b99d47864e893b7e52c5af39049c7a67305075f3ce6b6c4"
+checksum = "4ebb08e1856dfba2e1870b15b8f4ad1994a3a9611619241929cedeaa7324a51c"
 dependencies = [
  "crc",
  "errno 0.2.8",
