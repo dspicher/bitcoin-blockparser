@@ -19,7 +19,6 @@ env_logger = "0.10.0"
 hex = "0.4.3"
 log = { version = "0.4.19", default-features = false, features = ["std"] }
 rusty-leveldb = "2.0.0"
-seek_bufread = "1.2.2"
 
 [dev-dependencies]
 tempfile =  "3.7.0"
