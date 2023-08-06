@@ -1,8 +1,4 @@
 use clap::{Arg, Command};
-use std::boxed::Box;
-use std::fmt;
-use std::path::PathBuf;
-use std::process;
 
 use crate::callbacks::balances::Balances;
 use crate::callbacks::opreturn::OpReturn;
@@ -37,8 +33,8 @@ impl BlockHeightRange {
     }
 }
 
-impl fmt::Display for BlockHeightRange {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl std::fmt::Display for BlockHeightRange {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let end = match self.end {
             Some(e) => e.to_string(),
             None => String::from("HEAD"),
@@ -56,7 +52,7 @@ pub struct ParserOptions {
     // Enable this if you want to check the chain index integrity and merkle root for each block.
     verify: bool,
     // Path to directory where blk.dat files are stored
-    blockchain_dir: PathBuf,
+    blockchain_dir: std::path::PathBuf,
     // Range which is considered for parsing
     range: BlockHeightRange,
 }
@@ -111,7 +107,7 @@ fn main() {
         Ok(o) => o,
         Err(desc) => {
             log::error!(target: "main", "{}", desc);
-            process::exit(1);
+            std::process::exit(1);
         }
     };
 
@@ -130,7 +126,7 @@ fn main() {
                 options.blockchain_dir.display(),
                 e
             );
-            process::exit(1);
+            std::process::exit(1);
         }
     };
 
@@ -139,13 +135,13 @@ fn main() {
         Ok(_) => log::info!(target: "main", "Fin."),
         Err(why) => {
             log::error!("{}", why);
-            process::exit(1);
+            std::process::exit(1);
         }
     }
 }
 
 /// Returns default directory. TODO: test on windows
-fn get_absolute_blockchain_dir(coin: &CoinType) -> PathBuf {
+fn get_absolute_blockchain_dir(coin: &CoinType) -> std::path::PathBuf {
     dirs::home_dir()
         .expect("Unable to get home path from env!")
         .join(&coin.default_folder)
@@ -159,7 +155,7 @@ fn parse_args(matches: &clap::ArgMatches) -> anyhow::Result<ParserOptions> {
         .get_one::<String>("coin")
         .map_or_else(|| CoinType::from(Bitcoin), |v| v.parse().unwrap());
     let blockchain_dir = match matches.get_one::<String>("blockchain-dir") {
-        Some(p) => PathBuf::from(p),
+        Some(p) => std::path::PathBuf::from(p),
         None => get_absolute_blockchain_dir(&coin),
     };
     let start = matches.get_one::<u64>("start").copied().unwrap_or(0);

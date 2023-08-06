@@ -1,7 +1,6 @@
 use std::collections::HashMap;
-use std::convert::From;
-use std::fs::{self, DirEntry, File};
-use std::io::{self, Seek, SeekFrom};
+use std::fs::{DirEntry, File};
+use std::io::{Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 
 use anyhow::Context;
@@ -54,7 +53,7 @@ impl BlkFile {
         log::info!(target: "blkfile", "Reading files from {} ...", path.display());
         let mut collected = HashMap::with_capacity(4000);
 
-        for entry in fs::read_dir(path)? {
+        for entry in std::fs::read_dir(path)? {
             match entry {
                 Ok(de) => {
                     let path = BlkFile::resolve_path(&de)?;
@@ -72,7 +71,7 @@ impl BlkFile {
                     // Check if it's a valid blk file
                     if let Some(index) = BlkFile::parse_blk_index(&file_name, "blk", ".dat") {
                         // Build BlkFile structures
-                        let size = fs::metadata(path.as_path())?.len();
+                        let size = std::fs::metadata(path.as_path())?.len();
                         log::trace!(target: "blkfile", "Adding {} ... (index: {}, size: {})", path.display(), index, size);
                         collected.insert(index, BlkFile::new(path, size));
                     }
@@ -93,9 +92,9 @@ impl BlkFile {
 
     /// Resolves a PathBuf for the given entry.
     /// Also resolves symlinks if present.
-    fn resolve_path(entry: &DirEntry) -> io::Result<PathBuf> {
+    fn resolve_path(entry: &DirEntry) -> std::io::Result<PathBuf> {
         if entry.file_type()?.is_symlink() {
-            fs::read_link(entry.path())
+            std::fs::read_link(entry.path())
         } else {
             Ok(entry.path())
         }

@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
@@ -82,7 +81,7 @@ impl Callback for Balances {
             .write_all(format!("{};{}\n", "address", "balance").as_bytes())?;
 
         // Collect balances for each address
-        let mut balances: HashMap<&bitcoin::Address, u64> = HashMap::new();
+        let mut balances = std::collections::HashMap::new();
         for unspent in self.unspents.0.values() {
             let entry = balances.entry(&unspent.address).or_insert(0);
             *entry += unspent.value;
@@ -93,7 +92,7 @@ impl Callback for Balances {
                 .write_all(format!("{address};{balance}\n").as_bytes())?;
         }
 
-        fs::rename(
+        std::fs::rename(
             self.dump_folder.as_path().join("balances.csv.tmp"),
             self.dump_folder.as_path().join(format!(
                 "balances-{}-{}.csv",

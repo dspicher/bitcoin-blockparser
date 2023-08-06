@@ -1,8 +1,7 @@
 use bitcoin::consensus::Decodable;
-use std::io::{self};
 
 /// Trait for structured reading of blockchain data
-pub trait BlockchainRead: io::Read {
+pub trait BlockchainRead: std::io::Read {
     /// Reads a block as specified here: https://en.bitcoin.it/wiki/Protocol_specification#block
     fn read_block(&mut self) -> anyhow::Result<bitcoin::Block> {
         Ok(bitcoin::Block::consensus_decode(self).unwrap())
@@ -11,13 +10,12 @@ pub trait BlockchainRead: io::Read {
 
 /// All types that implement `Read` get methods defined in `BlockchainRead`
 /// for free.
-impl<R: io::Read + ?Sized> BlockchainRead for R {}
+impl<R: std::io::Read + ?Sized> BlockchainRead for R {}
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use seek_bufread::BufReader;
-    use std::io::Cursor;
 
     #[test]
     fn test_bitcoin_parse_genesis_block() {
@@ -81,7 +79,7 @@ mod tests {
             0x66, 0xbf, 0x62, 0x1e, 0x73, 0xa8, 0x2c, 0xbf, 0x23, 0x42, 0xc8, 0x58, 0xee, 0xac,
             0x00, 0x00, 0x00, 0x0,
         ];
-        let inner = Cursor::new(raw_data);
+        let inner = std::io::Cursor::new(raw_data);
         let mut reader = BufReader::with_capacity(200, inner);
 
         // Parse block

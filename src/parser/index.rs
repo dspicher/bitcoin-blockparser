@@ -1,9 +1,4 @@
 use bitcoin::hashes::{sha256d, Hash};
-use std::collections::HashMap;
-use std::convert::TryInto;
-use std::fmt;
-use std::io::Cursor;
-use std::path::Path;
 
 use byteorder::ReadBytesExt;
 use rusty_leveldb::{LdbIterator, Options, DB};
@@ -16,15 +11,15 @@ const BLOCK_HAVE_DATA: u64 = 8;
 /// Holds the index of longest valid chain
 pub struct ChainIndex {
     max_height: u64,
-    block_index: HashMap<u64, BlockIndexRecord>,
-    max_height_blk_index: HashMap<u64, u64>, // Maps blk_index to max_height found in the file
+    block_index: std::collections::HashMap<u64, BlockIndexRecord>,
+    max_height_blk_index: std::collections::HashMap<u64, u64>, // Maps blk_index to max_height found in the file
 }
 
 impl ChainIndex {
     pub fn new(options: &ParserOptions) -> anyhow::Result<Self> {
         let path = options.blockchain_dir.join("index");
         let mut block_index = get_block_index(&path)?;
-        let mut max_height_blk_index = HashMap::new();
+        let mut max_height_blk_index = std::collections::HashMap::new();
 
         for (height, index_record) in &block_index {
             match max_height_blk_index.get(&index_record.blk_index) {
@@ -90,7 +85,7 @@ pub struct BlockIndexRecord {
 
 impl BlockIndexRecord {
     fn from(key: &[u8], values: &[u8]) -> anyhow::Result<Self> {
-        let mut reader = Cursor::new(values);
+        let mut reader = std::io::Cursor::new(values);
 
         let block_hash: [u8; 32] = key.try_into().expect("leveldb: malformed blockhash");
         let version = read_varint(&mut reader)?;
@@ -112,8 +107,8 @@ impl BlockIndexRecord {
     }
 }
 
-impl fmt::Debug for BlockIndexRecord {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl std::fmt::Debug for BlockIndexRecord {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("BlockIndexRecord")
             .field("block_hash", &self.block_hash)
             .field("version", &self.version)
@@ -126,10 +121,12 @@ impl fmt::Debug for BlockIndexRecord {
     }
 }
 
-pub fn get_block_index(path: &Path) -> anyhow::Result<HashMap<u64, BlockIndexRecord>> {
+pub fn get_block_index(
+    path: &std::path::Path,
+) -> anyhow::Result<std::collections::HashMap<u64, BlockIndexRecord>> {
     log::info!(target: "index", "Reading index from {} ...", path.display());
 
-    let mut block_index = HashMap::with_capacity(800_000);
+    let mut block_index = std::collections::HashMap::with_capacity(800_000);
     let mut db_iter = DB::open(path, Options::default())?.new_iter()?;
     let (mut key, mut value) = (vec![], vec![]);
 
@@ -153,7 +150,7 @@ fn is_block_index_record(data: &[u8]) -> bool {
 
 /// TODO: this is a wonky 1:1 translation from https://github.com/bitcoin/bitcoin
 /// It is NOT the same as CompactSize.
-fn read_varint(reader: &mut Cursor<&[u8]>) -> anyhow::Result<u64> {
+fn read_varint(reader: &mut std::io::Cursor<&[u8]>) -> anyhow::Result<u64> {
     let mut n = 0;
     loop {
         let ch_data = reader.read_u8()?;

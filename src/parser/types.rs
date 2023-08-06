@@ -1,5 +1,4 @@
 use bitcoin::hashes::sha256d;
-use std::convert::From;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
