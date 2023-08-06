@@ -63,7 +63,7 @@ pub struct ParserOptions {
 
 fn command() -> Command {
     let coins = ["bitcoin", "testnet3"];
-    Command::new("rusty-blockparser")
+    Command::new("bitcoin-blockparser")
     .version(clap::crate_version!())
     // Add flags
     .arg(Arg::new("verify")
@@ -116,7 +116,7 @@ fn main() {
     };
 
     // Apply log filter based on verbosity
-    log::info!(target: "main", "Starting rusty-blockparser v{} ...", env!("CARGO_PKG_VERSION"));
+    log::info!(target: "main", "Starting bitcoin-blockparser v{} ...", env!("CARGO_PKG_VERSION"));
     if options.verify {
         log::info!(target: "main", "Configured to verify merkle roots and block hashes");
     }
@@ -202,46 +202,46 @@ mod tests {
     fn test_args_subcommand() {
         let tmp_dir = tempfile::tempdir().unwrap();
         parse_args(&command().get_matches_from([
-            "rusty-blockparser",
+            "bitcoin-blockparser",
             "unspentcsvdump",
             tmp_dir.path().to_str().unwrap(),
         ]))
         .unwrap();
-        parse_args(&command().get_matches_from(["rusty-blockparser", "simplestats"])).unwrap();
+        parse_args(&command().get_matches_from(["bitcoin-blockparser", "simplestats"])).unwrap();
         parse_args(&command().get_matches_from([
-            "rusty-blockparser",
+            "bitcoin-blockparser",
             "balances",
             tmp_dir.path().to_str().unwrap(),
         ]))
         .unwrap();
-        parse_args(&command().get_matches_from(["rusty-blockparser", "opreturn"])).unwrap();
+        parse_args(&command().get_matches_from(["bitcoin-blockparser", "opreturn"])).unwrap();
     }
 
     #[test]
     fn test_args_coin() {
-        let args = ["rusty-blockparser", "simplestats"];
+        let args = ["bitcoin-blockparser", "simplestats"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(options.coin.name, "Bitcoin");
 
-        let args = ["rusty-blockparser", "-c", "testnet3", "simplestats"];
+        let args = ["bitcoin-blockparser", "-c", "testnet3", "simplestats"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(options.coin.name, "TestNet3");
     }
 
     #[test]
     fn test_args_verify() {
-        let args = ["rusty-blockparser", "simplestats"];
+        let args = ["bitcoin-blockparser", "simplestats"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert!(!options.verify);
 
-        let args = ["rusty-blockparser", "--verify", "simplestats"];
+        let args = ["bitcoin-blockparser", "--verify", "simplestats"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert!(options.verify);
     }
 
     #[test]
     fn test_args_blockchain_dir() {
-        let args = ["rusty-blockparser", "simplestats"];
+        let args = ["bitcoin-blockparser", "simplestats"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.blockchain_dir,
@@ -250,12 +250,12 @@ mod tests {
                 .join(std::path::Path::new(".bitcoin").join("blocks"))
         );
 
-        let args = ["rusty-blockparser", "-d", "foo", "simplestats"];
+        let args = ["bitcoin-blockparser", "-d", "foo", "simplestats"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(options.blockchain_dir.to_str().unwrap(), "foo");
 
         let args = [
-            "rusty-blockparser",
+            "bitcoin-blockparser",
             "--blockchain-dir",
             "foo",
             "simplestats",
@@ -266,7 +266,7 @@ mod tests {
 
     #[test]
     fn test_args_start() {
-        let args = ["rusty-blockparser", "simplestats"];
+        let args = ["bitcoin-blockparser", "simplestats"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.range,
@@ -276,7 +276,7 @@ mod tests {
             }
         );
 
-        let args = ["rusty-blockparser", "-s", "10", "simplestats"];
+        let args = ["bitcoin-blockparser", "-s", "10", "simplestats"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.range,
@@ -286,7 +286,7 @@ mod tests {
             }
         );
 
-        let args = ["rusty-blockparser", "--start", "10", "simplestats"];
+        let args = ["bitcoin-blockparser", "--start", "10", "simplestats"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.range,
@@ -299,7 +299,7 @@ mod tests {
 
     #[test]
     fn test_args_end() {
-        let args = ["rusty-blockparser", "-e", "10", "simplestats"];
+        let args = ["bitcoin-blockparser", "-e", "10", "simplestats"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.range,
@@ -309,7 +309,7 @@ mod tests {
             }
         );
 
-        let args = ["rusty-blockparser", "--end", "10", "simplestats"];
+        let args = ["bitcoin-blockparser", "--end", "10", "simplestats"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.range,
@@ -322,7 +322,7 @@ mod tests {
 
     #[test]
     fn test_args_start_and_end() {
-        let args = ["rusty-blockparser", "-s", "1", "-e", "2", "simplestats"];
+        let args = ["bitcoin-blockparser", "-s", "1", "-e", "2", "simplestats"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.range,
@@ -332,7 +332,7 @@ mod tests {
             }
         );
 
-        let args = ["rusty-blockparser", "-s", "2", "-e", "1", "simplestats"];
+        let args = ["bitcoin-blockparser", "-s", "2", "-e", "1", "simplestats"];
         assert!(parse_args(&command().get_matches_from(args)).is_err());
     }
 }

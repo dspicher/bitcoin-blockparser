@@ -1,6 +1,6 @@
-# rusty-blockparser
+# bitcoin-blockparser
 
-rusty-blockparser is a Bitcoin Blockchain Parser written in **Rust language**.
+bitcoin-blockparser is a Bitcoin Blockchain Parser written in **Rust language**.
 
 It allows extraction of various data types (blocks, transactions, scripts, public keys/hashes, balances, ...)
 and UTXO dumps from Bitcoin based blockchains.
@@ -17,7 +17,7 @@ If something doesn't match the parser exits.
 
 ## Usage
 ```
-Usage: rusty-blockparser [OPTIONS] [COMMAND]
+Usage: bitcoin-blockparser [OPTIONS] [COMMAND]
 
 Commands:
   unspentcsvdump  Dumps the unspent outputs to CSV file
@@ -49,7 +49,7 @@ Options:
 To make a `unspentcsvdump` of the Bitcoin blockchain your command would look like this:
 ```
 # ./blockparser unspentcsvdump /path/to/dump/
-[6:02:53] INFO - main: Starting rusty-blockparser v0.7.0 ...
+[6:02:53] INFO - main: Starting bitcoin-blockparser v0.7.0 ...
 [6:02:53] INFO - index: Reading index from ~/.bitcoin/blocks/index ...
 [6:02:54] INFO - index: Got longest chain with 639626 blocks ...
 [6:02:54] INFO - blkfile: Reading files from ~/.bitcoin/blocks ...
@@ -81,17 +81,17 @@ All you need is `rust` and `cargo`.
 
 You can download the latest release from crates.io:
 ```bash
-cargo install rusty-blockparser
+cargo install bitcoin-blockparser
 ```
 
 ### Build from source
 
 ```bash
-git clone https://github.com/gcarq/rusty-blockparser.git
-cd rusty-blockparser
+git clone https://github.com/dspicher/bitcoin-blockparser.git
+cd bitcoin-blockparser
 cargo build --release
 cargo test --release
-./target/release/rusty-blockparser --help
+./target/release/bitcoin-blockparser --help
 ```
 
 It is important to build with `--release`, otherwise you will get a horrible performance!
