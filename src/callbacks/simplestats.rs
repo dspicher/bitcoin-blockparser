@@ -192,7 +192,7 @@ impl Callback for SimpleStats {
     }
 
     fn on_start(&mut self, _: u64) -> anyhow::Result<()> {
-        log::info!(target: "callback", "Executing simplestats ...");
+        tracing::info!(target: "callback", "Executing simplestats ...");
         Ok(())
     }
 
@@ -258,7 +258,7 @@ impl Callback for SimpleStats {
         self.print_averages(&mut buffer)?;
         writeln!(&mut buffer)?;
         self.print_transaction_types(&mut buffer)?;
-        log::info!(target: "simplestats", "\n\n{}", String::from_utf8_lossy(&buffer));
+        tracing::info!(target: "simplestats", "\n\n{}", String::from_utf8_lossy(&buffer));
         Ok(())
     }
 }

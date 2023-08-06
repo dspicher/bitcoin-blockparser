@@ -24,7 +24,7 @@ impl Callback for OpReturn {
     }
 
     fn on_start(&mut self, _: u64) -> anyhow::Result<()> {
-        log::info!(target: "callback", "Executing OpReturn ...");
+        tracing::info!(target: "callback", "Executing OpReturn ...");
         Ok(())
     }
 

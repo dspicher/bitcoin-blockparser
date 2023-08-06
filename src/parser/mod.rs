@@ -40,7 +40,7 @@ impl BlockchainParser {
     /// Instantiates a new Parser.
     #[must_use]
     pub fn new(options: ParserOptions, chain_storage: ChainStorage) -> Self {
-        log::info!(target: "parser", "Parsing {} blockchain ...", options.coin.name);
+        tracing::info!(target: "parser", "Parsing {} blockchain ...", options.coin.name);
         Self {
             chain_storage,
             stats: WorkerStats::new(options.range.start),
@@ -50,7 +50,7 @@ impl BlockchainParser {
     }
 
     pub fn start(&mut self) -> anyhow::Result<()> {
-        log::debug!(target: "parser", "Starting worker ...");
+        tracing::debug!(target: "parser", "Starting worker ...");
 
         self.on_start(self.cur_height)?;
         while let Some(block) = self.chain_storage.get_block(self.cur_height) {
@@ -73,16 +73,16 @@ impl BlockchainParser {
         let now = Instant::now();
         self.stats.started_at = now;
         self.stats.last_log = now;
-        log::info!(target: "parser", "Processing blocks starting from height {} ...", height);
+        tracing::info!(target: "parser", "Processing blocks starting from height {} ...", height);
         self.callback.on_start(height)?;
-        log::trace!(target: "parser", "on_start() called");
+        tracing::trace!(target: "parser", "on_start() called");
         Ok(())
     }
 
     /// Triggers the on_block() callback and updates statistics.
     fn on_block(&mut self, block: &bitcoin::Block, height: u64) -> anyhow::Result<()> {
         self.callback.on_block(block, height)?;
-        log::trace!(target: "parser", "on_block(height={}) called", height);
+        tracing::trace!(target: "parser", "on_block(height={}) called", height);
         if self.callback.show_progress() {
             self.print_progress(height);
         }
@@ -91,11 +91,11 @@ impl BlockchainParser {
 
     /// Triggers the on_complete() callback and updates statistics.
     fn on_complete(&mut self, height: u64) -> anyhow::Result<()> {
-        log::info!(target: "parser", "Done. Processed blocks up to height {} in {:.2} minutes.",
+        tracing::info!(target: "parser", "Done. Processed blocks up to height {} in {:.2} minutes.",
         height, self.stats.started_at.elapsed().as_secs_f32() / 60.0);
 
         self.callback.on_complete(height)?;
-        log::trace!(target: "parser", "on_complete() called");
+        tracing::trace!(target: "parser", "on_complete() called");
         Ok(())
     }
 
@@ -104,7 +104,7 @@ impl BlockchainParser {
         let blocks_speed = (height - self.stats.last_height) / self.stats.measure_frame.as_secs();
 
         if now - self.stats.last_log > self.stats.measure_frame {
-            log::info!(target: "parser", "Status: {:7} Blocks processed. (remaining: {:7}, speed: {:5.2} blocks/s)",
+            tracing::info!(target: "parser", "Status: {:7} Blocks processed. (remaining: {:7}, speed: {:5.2} blocks/s)",
               height, self.remaining(), blocks_speed);
             self.stats.last_log = now;
             self.stats.last_height = height;

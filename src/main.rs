@@ -1,4 +1,5 @@
 use clap::{Arg, Command};
+use tracing_subscriber::prelude::*;
 
 use crate::callbacks::balances::Balances;
 use crate::callbacks::opreturn::OpReturn;
@@ -102,25 +103,32 @@ fn command() -> Command {
 }
 
 fn main() {
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::filter::EnvFilter::builder()
+                .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
+                .from_env_lossy(),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
     let options = match parse_args(&command().get_matches()) {
         Ok(o) => o,
         Err(desc) => {
-            log::error!(target: "main", "{}", desc);
+            tracing::error!(target: "main", "{}", desc);
             std::process::exit(1);
         }
     };
 
     // Apply log filter based on verbosity
-    log::info!(target: "main", "Starting bitcoin-blockparser v{} ...", env!("CARGO_PKG_VERSION"));
+    tracing::info!(target: "main", "Starting bitcoin-blockparser v{} ...", env!("CARGO_PKG_VERSION"));
     if options.verify {
-        log::info!(target: "main", "Configured to verify merkle roots and block hashes");
+        tracing::info!(target: "main", "Configured to verify merkle roots and block hashes");
     }
 
     let chain_storage = match ChainStorage::new(&options) {
         Ok(storage) => storage,
         Err(e) => {
-            log::error!(
+            tracing::error!(
                 target: "main",
                 "Cannot load blockchain data from: '{}'. {}",
                 options.blockchain_dir.display(),
@@ -132,9 +140,9 @@ fn main() {
 
     let mut parser = BlockchainParser::new(options, chain_storage);
     match parser.start() {
-        Ok(_) => log::info!(target: "main", "Fin."),
+        Ok(_) => tracing::info!(target: "main", "Fin."),
         Err(why) => {
-            log::error!("{}", why);
+            tracing::error!("{}", why);
             std::process::exit(1);
         }
     }

@@ -27,7 +27,7 @@ impl BlkFile {
     /// Opens the file handle (does nothing if the file has been opened already)
     fn open(&mut self) -> anyhow::Result<&mut std::io::BufReader<File>> {
         if self.reader.is_none() {
-            log::debug!(target: "blkfile", "Opening {} ...", &self.path.display());
+            tracing::debug!(target: "blkfile", "Opening {} ...", &self.path.display());
             self.reader = Some(std::io::BufReader::new(File::open(&self.path)?));
         }
         Ok(self.reader.as_mut().unwrap())
@@ -35,7 +35,7 @@ impl BlkFile {
 
     /// Closes the file handle
     pub fn close(&mut self) {
-        log::debug!(target: "blkfile", "Closing {} ...", &self.path.display());
+        tracing::debug!(target: "blkfile", "Closing {} ...", &self.path.display());
         if self.reader.is_some() {
             self.reader = None;
         }
@@ -49,7 +49,7 @@ impl BlkFile {
 
     /// Collects all blk*.dat paths in the given directory
     pub fn from_path(path: &Path) -> anyhow::Result<HashMap<u64, BlkFile>> {
-        log::info!(target: "blkfile", "Reading files from {} ...", path.display());
+        tracing::info!(target: "blkfile", "Reading files from {} ...", path.display());
         let mut collected = HashMap::with_capacity(4000);
 
         for entry in std::fs::read_dir(path)? {
@@ -71,17 +71,17 @@ impl BlkFile {
                     if let Some(index) = BlkFile::parse_blk_index(&file_name, "blk", ".dat") {
                         // Build BlkFile structures
                         let size = std::fs::metadata(path.as_path())?.len();
-                        log::trace!(target: "blkfile", "Adding {} ... (index: {}, size: {})", path.display(), index, size);
+                        tracing::trace!(target: "blkfile", "Adding {} ... (index: {}, size: {})", path.display(), index, size);
                         collected.insert(index, BlkFile::new(path, size));
                     }
                 }
                 Err(msg) => {
-                    log::warn!(target: "blkfile", "Unable to read blk file!: {}", msg);
+                    tracing::warn!(target: "blkfile", "Unable to read blk file!: {}", msg);
                 }
             }
         }
 
-        log::trace!(target: "blkfile", "Found {} blk files", collected.len());
+        tracing::trace!(target: "blkfile", "Found {} blk files", collected.len());
         if collected.is_empty() {
             Err(anyhow::anyhow!("No blk files found!"))
         } else {
