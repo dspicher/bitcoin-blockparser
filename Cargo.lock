@@ -86,6 +86,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "bitcoin-blockparser"
+version = "0.11.0"
+dependencies = [
+ "anyhow",
+ "bitcoin",
+ "byteorder",
+ "clap",
+ "dirs",
+ "env_logger",
+ "hex",
+ "log",
+ "rusty-leveldb",
+ "seek_bufread",
+ "tempfile",
+]
+
+[[package]]
 name = "bitcoin-private"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -494,23 +511,6 @@ dependencies = [
  "libc",
  "linux-raw-sys",
  "windows-sys",
-]
-
-[[package]]
-name = "rusty-blockparser"
-version = "0.11.0"
-dependencies = [
- "anyhow",
- "bitcoin",
- "byteorder",
- "clap",
- "dirs",
- "env_logger",
- "hex",
- "log",
- "rusty-leveldb",
- "seek_bufread",
- "tempfile",
 ]
 
 [[package]]
