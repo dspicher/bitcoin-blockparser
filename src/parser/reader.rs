@@ -15,7 +15,6 @@ impl<R: std::io::Read + ?Sized> BlockchainRead for R {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use seek_bufread::BufReader;
 
     #[test]
     fn test_bitcoin_parse_genesis_block() {
@@ -80,7 +79,7 @@ mod tests {
             0x00, 0x00, 0x00, 0x0,
         ];
         let inner = std::io::Cursor::new(raw_data);
-        let mut reader = BufReader::with_capacity(200, inner);
+        let mut reader = std::io::BufReader::with_capacity(200, inner);
 
         // Parse block
         let block = reader.read_block().unwrap();

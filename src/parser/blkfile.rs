@@ -4,7 +4,6 @@ use std::io::{Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 
 use anyhow::Context;
-use seek_bufread::BufReader;
 
 use crate::parser::reader::BlockchainRead;
 
@@ -13,7 +12,7 @@ use crate::parser::reader::BlockchainRead;
 pub struct BlkFile {
     pub path: PathBuf,
     pub size: u64,
-    reader: Option<BufReader<File>>,
+    reader: Option<std::io::BufReader<File>>,
 }
 
 impl BlkFile {
@@ -26,10 +25,10 @@ impl BlkFile {
     }
 
     /// Opens the file handle (does nothing if the file has been opened already)
-    fn open(&mut self) -> anyhow::Result<&mut BufReader<File>> {
+    fn open(&mut self) -> anyhow::Result<&mut std::io::BufReader<File>> {
         if self.reader.is_none() {
             log::debug!(target: "blkfile", "Opening {} ...", &self.path.display());
-            self.reader = Some(BufReader::new(File::open(&self.path)?));
+            self.reader = Some(std::io::BufReader::new(File::open(&self.path)?));
         }
         Ok(self.reader.as_mut().unwrap())
     }
