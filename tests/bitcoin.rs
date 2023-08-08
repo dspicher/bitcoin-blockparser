@@ -1,24 +1,8 @@
-fn storage() -> bitcoin_blockparser::parser::chain::ChainStorage {
-    let options = bitcoin_blockparser::ParserOptions {
-        callback: Box::new(bitcoin_blockparser::callbacks::simplestats::SimpleStats::default()),
-        coin: "bitcoin".parse().unwrap(),
-        verify: true,
-        blockchain_dir: std::path::PathBuf::from("tests/testdata/bitcoin"),
-        range: bitcoin_blockparser::BlockHeightRange::new(0, Some(200)).unwrap(),
-    };
-    let storage = bitcoin_blockparser::parser::chain::ChainStorage::new(&options).unwrap();
-
-    // Discard transient diff on LevelDB files
-    std::process::Command::new("git")
-        .args(["checkout", "tests/testdata/bitcoin"])
-        .output()
-        .unwrap();
-    storage
-}
+mod common;
 
 static STORAGE: once_cell::sync::Lazy<
     std::sync::Mutex<bitcoin_blockparser::parser::chain::ChainStorage>,
-> = once_cell::sync::Lazy::new(|| std::sync::Mutex::new(storage()));
+> = once_cell::sync::Lazy::new(|| std::sync::Mutex::new(common::storage("bitcoin", 170)));
 
 #[test]
 fn test_bitcoin_genesis() {
