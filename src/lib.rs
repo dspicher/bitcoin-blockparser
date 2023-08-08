@@ -45,15 +45,15 @@ impl std::fmt::Display for BlockHeightRange {
 /// Holds all available user arguments
 pub struct ParserOptions {
     // Name of the callback which gets executed for each block. (See callbacks/mod.rs)
-    callback: Box<dyn Callback>,
+    pub callback: Box<dyn Callback>,
     // Holds the relevant coin parameters we need for parsing
-    coin: CoinType,
+    pub coin: CoinType,
     // Enable this if you want to check the chain index integrity and merkle root for each block.
     pub verify: bool,
     // Path to directory where blk.dat files are stored
     pub blockchain_dir: std::path::PathBuf,
     // Range which is considered for parsing
-    range: BlockHeightRange,
+    pub range: BlockHeightRange,
 }
 
 #[must_use]
