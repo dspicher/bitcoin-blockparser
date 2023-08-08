@@ -2,12 +2,15 @@ from pathlib import Path
 import requests
 import plyvel
 
-LEVEL_DB_PATH = "./testnet3/index"
-MAX_BLOCK_HEIGHT = 120
-API_ENDPOINT = "https://blockstream.info/testnet/api/"
+LEVEL_DB_PATH = "./signet/index"
+MAX_BLOCK_HEIGHT = 2
 
 def get_blockhash(height: int) -> str:
-    return requests.get(f"{API_ENDPOINT}block-height/{height}").text.strip()
+    return [
+        "00000008819873e925422c1ff0f99f7cc9bbb232af63a077a480a3633bee1ef6",
+        "00000086d6b2636cb2a392d45edc4ec544a10024d30141c9adf4bfd9de533b53",
+        "00000032bb881de703dcc968e8258080c7ed4a2933e3a35888fa0b2f75f36029",
+            ][height]
 
 def make_prefix_copy(db: plyvel.DB) -> None:
     path = Path("./pruned-db")

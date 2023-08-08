@@ -22,6 +22,7 @@ pub trait Coin {
 // and add the coin name to from_str() below
 pub struct Bitcoin;
 pub struct TestNet3;
+pub struct Signet;
 
 impl Coin for Bitcoin {
     fn name(&self) -> String {
@@ -62,6 +63,25 @@ impl Coin for TestNet3 {
     }
 }
 
+impl Coin for Signet {
+    fn name(&self) -> String {
+        String::from("SigNet")
+    }
+    fn magic(&self) -> u32 {
+        0x0709_110b
+    }
+    fn version_id(&self) -> u8 {
+        0x6f
+    }
+    fn genesis(&self) -> sha256d::Hash {
+        sha256d::Hash::from_str("00000008819873e925422c1ff0f99f7cc9bbb232af63a077a480a3633bee1ef6")
+            .unwrap()
+    }
+    fn default_folder(&self) -> PathBuf {
+        Path::new(".bitcoin").join("signet")
+    }
+}
+
 #[derive(Clone)]
 // Holds the selected coin type information
 pub struct CoinType {
@@ -96,6 +116,7 @@ impl FromStr for CoinType {
         match coin_name {
             "bitcoin" => Ok(CoinType::from(Bitcoin)),
             "testnet3" => Ok(CoinType::from(TestNet3)),
+            "signet" => Ok(CoinType::from(Signet)),
             n => {
                 anyhow::bail!("The is no impl for `{}`!", n);
             }
