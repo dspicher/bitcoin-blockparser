@@ -1,4 +1,0 @@
-Recovered manifest with next_file=5 manifest_num=4 log_num=3 prev_log_num=0 last_seq=0
-reusing manifest "tests/testdata/mainnet/index/MANIFEST-000002"
-Recovering log file "/home/dominik/bitcoin-blockparser/tests/testdata/mainnet/index/000003.log"
-reusing log file "/home/dominik/bitcoin-blockparser/tests/testdata/mainnet/index/000003.log"
