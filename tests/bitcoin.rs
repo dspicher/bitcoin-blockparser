@@ -3,14 +3,14 @@ fn storage() -> bitcoin_blockparser::parser::chain::ChainStorage {
         callback: Box::new(bitcoin_blockparser::callbacks::simplestats::SimpleStats::default()),
         coin: "bitcoin".parse().unwrap(),
         verify: true,
-        blockchain_dir: std::path::PathBuf::from("tests/testdata/mainnet"),
+        blockchain_dir: std::path::PathBuf::from("tests/testdata/bitcoin"),
         range: bitcoin_blockparser::BlockHeightRange::new(0, Some(200)).unwrap(),
     };
     let storage = bitcoin_blockparser::parser::chain::ChainStorage::new(&options).unwrap();
 
     // Discard transient diff on LevelDB files
     std::process::Command::new("git")
-        .args(["checkout", "tests/testdata/mainnet"])
+        .args(["checkout", "tests/testdata/bitcoin"])
         .output()
         .unwrap();
     storage
