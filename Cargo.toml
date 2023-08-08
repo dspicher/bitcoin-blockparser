@@ -12,7 +12,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.72"
 bitcoin = "0.30.1"
-clap = { version = "4.3.19", features = [ "cargo" ] }
+clap = { version = "4.3.21", features = [ "cargo" ] }
 dirs = "5.0.1"
 hex = "0.4.3"
 rusty-leveldb = "2.0.0"
