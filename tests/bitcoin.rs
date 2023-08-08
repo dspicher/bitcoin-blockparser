@@ -46,8 +46,17 @@ fn test_bitcoin_genesis() {
     );
     assert_eq!(0xffff_ffff, genesis.txdata[0].input[0].previous_output.vout);
     assert_eq!(0x4d, genesis.txdata[0].input[0].script_sig.len());
-    let script = hex::decode("04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73").unwrap();
-    assert_eq!(script, genesis.txdata[0].input[0].script_sig.as_bytes());
+    let script = "04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73";
+    assert_eq!(
+        hex::decode(script).unwrap(),
+        genesis.txdata[0].input[0].script_sig.as_bytes()
+    );
+    assert!(script.contains(
+        hex::encode(
+            "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks".as_bytes()
+        )
+        .as_str()
+    ));
     assert_eq!(
         0xffff_ffff,
         genesis.txdata[0].input[0].sequence.to_consensus_u32()
