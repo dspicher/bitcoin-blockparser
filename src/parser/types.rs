@@ -97,7 +97,7 @@ impl FromStr for CoinType {
             "bitcoin" => Ok(CoinType::from(Bitcoin)),
             "testnet3" => Ok(CoinType::from(TestNet3)),
             n => {
-                anyhow::bail!("The is no impl for `{}`!", n);
+                anyhow::bail!("There is no impl for `{}`!", n);
             }
         }
     }
