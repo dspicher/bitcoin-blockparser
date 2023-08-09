@@ -2,6 +2,7 @@ use clap::{Arg, Command};
 
 use crate::parser::types::{Bitcoin, CoinType};
 
+pub mod db;
 pub mod parser;
 
 #[derive(Copy, Clone)]
@@ -36,6 +37,7 @@ impl std::fmt::Display for BlockHeightRange {
 }
 
 pub struct ParserOptions {
+    pub db_url: String,
     pub coin: CoinType,
     pub verify: bool,
     pub blockchain_dir: std::path::PathBuf,
@@ -47,6 +49,10 @@ pub fn command() -> Command {
     let coins = ["bitcoin", "testnet3"];
     Command::new("bitcoin-blockparser")
     .version(clap::crate_version!())
+    .arg(Arg::new("db-url")
+        .short('u')
+        .long("db-url")
+        .help("The URL of the database (default in-memory)"))
     .arg(Arg::new("verify")
         .long("verify")
         .action(clap::ArgAction::SetTrue)
@@ -87,6 +93,10 @@ fn get_absolute_blockchain_dir(coin: &CoinType) -> std::path::PathBuf {
 }
 
 pub fn parse_args(matches: &clap::ArgMatches) -> anyhow::Result<ParserOptions> {
+    let db_url: String = matches
+        .get_one("db-url")
+        .cloned()
+        .unwrap_or_else(|| ":memory:".parse().unwrap());
     let verify = matches.get_flag("verify");
 
     let coin = matches
@@ -101,6 +111,7 @@ pub fn parse_args(matches: &clap::ArgMatches) -> anyhow::Result<ParserOptions> {
     let range = BlockHeightRange::new(start, end)?;
 
     let options = ParserOptions {
+        db_url,
         coin,
         verify,
         blockchain_dir,
@@ -122,6 +133,21 @@ mod tests {
         let args = ["bitcoin-blockparser", "-c", "testnet3"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(options.coin.name, "TestNet3");
+    }
+
+    #[test]
+    fn test_args_db_url() {
+        let args = ["bitcoin-blockparser"];
+        let options = parse_args(&command().get_matches_from(args)).unwrap();
+        assert_eq!(options.db_url.to_string(), ":memory:");
+
+        let args = ["bitcoin-blockparser", "--db-url", "mydb.db"];
+        let options = parse_args(&command().get_matches_from(args)).unwrap();
+        assert_eq!(options.db_url.to_string(), "mydb.db");
+
+        let args = ["bitcoin-blockparser", "-u", "postgresql://localhost:5432"];
+        let options = parse_args(&command().get_matches_from(args)).unwrap();
+        assert_eq!(options.db_url.to_string(), "postgresql://localhost:5432");
     }
 
     #[test]
