@@ -9,6 +9,7 @@ use crate::callbacks::Callback;
 use crate::parser::types::{Bitcoin, CoinType};
 
 pub mod callbacks;
+pub mod db;
 pub mod parser;
 
 #[derive(Copy, Clone)]
