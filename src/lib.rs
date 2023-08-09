@@ -95,10 +95,19 @@ pub fn command() -> Command {
         .value_parser(clap::value_parser!(u64))
         .help("Specify last block for parsing (inclusive) (default: all known blocks)"))
     // Add callbacks
-    .subcommand(UnspentCsvDump::build_subcommand())
-    .subcommand(SimpleStats::build_subcommand())
-    .subcommand(Balances::build_subcommand())
-    .subcommand(OpReturn::build_subcommand())
+    .subcommand(Command::new("unspentcsvdump").about("Dumps the unspent outputs to CSV file").arg(
+        Arg::new("dump-folder")
+            .help("Folder to store csv file")
+            .index(1)
+            .required(true)))
+    .subcommand(Command::new("simplestats").about("Shows various Blockchain stats"))
+    .subcommand(Command::new("balances").about("Dumps all addresses with non-zero balance to CSV file").arg(
+        Arg::new("dump-folder")
+            .help("Folder to store csv file")
+            .index(1)
+            .required(true),
+    ))
+    .subcommand(Command::new("opreturn").about("Shows embedded OP_RETURN data that is representable as UTF8"))
 }
 
 /// Returns default directory. TODO: test on windows

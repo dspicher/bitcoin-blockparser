@@ -1,4 +1,4 @@
-use clap::{ArgMatches, Command};
+use clap::ArgMatches;
 
 use crate::callbacks::Callback;
 
@@ -6,14 +6,6 @@ use crate::callbacks::Callback;
 pub struct OpReturn;
 
 impl Callback for OpReturn {
-    fn build_subcommand() -> Command
-    where
-        Self: Sized,
-    {
-        Command::new("opreturn")
-            .about("Shows embedded OP_RETURN data that is representable as UTF8")
-    }
-
     fn new(_: &ArgMatches) -> anyhow::Result<Self>
     where
         Self: Sized,
