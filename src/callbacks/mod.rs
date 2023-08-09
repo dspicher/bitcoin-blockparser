@@ -22,11 +22,6 @@ pub trait Callback {
 
     /// Gets called if the parser has finished and all blocks are handled
     fn on_complete(&mut self, block_height: u64) -> anyhow::Result<()>;
-
-    /// Can be used to toggle whether the progress should be shown for specific callbacks or not
-    fn show_progress(&self) -> bool {
-        true
-    }
 }
 
 pub struct UnspentValue {

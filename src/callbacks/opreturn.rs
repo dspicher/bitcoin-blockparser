@@ -54,8 +54,4 @@ impl Callback for OpReturn {
     fn on_complete(&mut self, _: u64) -> anyhow::Result<()> {
         Ok(())
     }
-
-    fn show_progress(&self) -> bool {
-        false
-    }
 }
