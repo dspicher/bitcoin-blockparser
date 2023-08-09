@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
-use clap::{Arg, ArgMatches, Command};
+use clap::ArgMatches;
 
 /// Dumps the UTXOs along with address in a csv file
 pub struct UnspentCsvDump {
@@ -22,20 +22,6 @@ impl UnspentCsvDump {
 }
 
 impl crate::callbacks::Callback for UnspentCsvDump {
-    fn build_subcommand() -> Command
-    where
-        Self: Sized,
-    {
-        Command::new("unspentcsvdump")
-            .about("Dumps the unspent outputs to CSV file")
-            .arg(
-                Arg::new("dump-folder")
-                    .help("Folder to store csv file")
-                    .index(1)
-                    .required(true),
-            )
-    }
-
     fn new(matches: &ArgMatches) -> anyhow::Result<Self>
     where
         Self: Sized,

@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
-use clap::{Arg, ArgMatches, Command};
+use clap::ArgMatches;
 
 use crate::callbacks::Callback;
 
@@ -22,20 +22,6 @@ impl Balances {
 }
 
 impl Callback for Balances {
-    fn build_subcommand() -> Command
-    where
-        Self: Sized,
-    {
-        Command::new("balances")
-            .about("Dumps all addresses with non-zero balance to CSV file")
-            .arg(
-                Arg::new("dump-folder")
-                    .help("Folder to store csv file")
-                    .index(1)
-                    .required(true),
-            )
-    }
-
     fn new(matches: &ArgMatches) -> anyhow::Result<Self>
     where
         Self: Sized,

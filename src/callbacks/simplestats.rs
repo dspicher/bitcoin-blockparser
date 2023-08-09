@@ -2,7 +2,7 @@ use bitcoin::hashes::{sha256d, Hash};
 use std::collections::HashMap;
 use std::io::Write;
 
-use clap::{ArgMatches, Command};
+use clap::ArgMatches;
 
 use crate::callbacks::Callback;
 
@@ -174,13 +174,6 @@ impl SimpleStats {
 }
 
 impl Callback for SimpleStats {
-    fn build_subcommand() -> Command
-    where
-        Self: Sized,
-    {
-        Command::new("simplestats").about("Shows various Blockchain stats")
-    }
-
     fn new(_: &ArgMatches) -> anyhow::Result<Self>
     where
         Self: Sized,
