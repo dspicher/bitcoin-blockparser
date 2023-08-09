@@ -35,13 +35,6 @@ impl Callback for OpReturn {
                                     &tx.txid(),
                                     s
                                 );
-                            } else {
-                                println!(
-                                    "height: {: <9} txid: {}    data: {}",
-                                    block_height,
-                                    &tx.txid(),
-                                    hex::encode(data.as_bytes())
-                                );
                             }
                         }
                     }
