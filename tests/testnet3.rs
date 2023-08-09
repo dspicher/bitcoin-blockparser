@@ -4,6 +4,10 @@ fn storage() -> bitcoin_blockparser::parser::chain::ChainStorage {
     common::storage("testnet3", 120)
 }
 
+fn parser() -> bitcoin_blockparser::parser::BlockchainParser {
+    common::parser("testnet3", 120)
+}
+
 #[test]
 fn test_blockdata_parsing() {
     let mut storage = storage();
@@ -31,4 +35,11 @@ fn test_genesis_header() {
         bitcoin::blockdata::constants::genesis_block(bitcoin::network::constants::Network::Testnet)
             .header
     );
+}
+
+#[test]
+fn test_blocks_db() {
+    let mut parser = parser();
+    parser.start().unwrap();
+    assert_eq!(parser.db().blocks_count().unwrap(), 121);
 }

@@ -4,6 +4,10 @@ fn storage() -> bitcoin_blockparser::parser::chain::ChainStorage {
     common::storage("bitcoin", 170)
 }
 
+fn parser() -> bitcoin_blockparser::parser::BlockchainParser {
+    common::parser("bitcoin", 170)
+}
+
 #[test]
 fn test_bitcoin_genesis() {
     let genesis = storage().get_block(0).unwrap();
@@ -110,4 +114,11 @@ fn test_timing() {
     for height in 0..=169 {
         storage.get_header(height).unwrap();
     }
+}
+
+#[test]
+fn test_blocks_db() {
+    let mut parser = parser();
+    parser.start().unwrap();
+    assert_eq!(parser.db().blocks_count().unwrap(), 171);
 }

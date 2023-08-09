@@ -39,6 +39,8 @@ fn main() {
     };
 
     let mut parser = BlockchainParser::new(&options, chain_storage);
-    parser.start();
+    if let Err(e) = parser.start() {
+        tracing::error!("error: {e:?}");
+    }
     tracing::info!(target: "main", "Fin.");
 }

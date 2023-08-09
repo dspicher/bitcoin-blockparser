@@ -19,10 +19,27 @@ pub fn storage(datadir: &str, max_height: u64) -> bitcoin_blockparser::parser::c
     let tempdir = tempfile::tempdir().unwrap();
     copy_dir_all(format!("tests/testdata/{datadir}"), &tempdir).unwrap();
     let options = bitcoin_blockparser::ParserOptions {
+        db_url: ":memory:".parse().unwrap(),
         coin: datadir.parse().unwrap(),
         verify: true,
         blockchain_dir: tempdir.into_path(),
         range: bitcoin_blockparser::BlockHeightRange::new(0, Some(max_height)).unwrap(),
     };
     bitcoin_blockparser::parser::chain::ChainStorage::new(&options).unwrap()
+}
+
+pub fn parser(datadir: &str, max_height: u64) -> bitcoin_blockparser::parser::BlockchainParser {
+    let tempdir = tempfile::tempdir().unwrap();
+    copy_dir_all(format!("tests/testdata/{datadir}"), &tempdir).unwrap();
+    let options = bitcoin_blockparser::ParserOptions {
+        db_url: ":memory:".parse().unwrap(),
+        coin: datadir.parse().unwrap(),
+        verify: true,
+        blockchain_dir: tempdir.into_path(),
+        range: bitcoin_blockparser::BlockHeightRange::new(0, Some(max_height)).unwrap(),
+    };
+    bitcoin_blockparser::parser::BlockchainParser::new(
+        &options,
+        bitcoin_blockparser::parser::chain::ChainStorage::new(&options).unwrap(),
+    )
 }
