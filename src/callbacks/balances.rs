@@ -28,8 +28,6 @@ impl Callback for Balances {
     {
         Command::new("balances")
             .about("Dumps all addresses with non-zero balance to CSV file")
-            .version("0.1")
-            .author("gcarq <egger.m@protonmail.com>")
             .arg(
                 Arg::new("dump-folder")
                     .help("Folder to store csv file")

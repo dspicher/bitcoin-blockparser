@@ -12,8 +12,6 @@ impl Callback for OpReturn {
     {
         Command::new("opreturn")
             .about("Shows embedded OP_RETURN data that is representable as UTF8")
-            .version("0.1")
-            .author("gcarq <egger.m@protonmail.com>")
     }
 
     fn new(_: &ArgMatches) -> anyhow::Result<Self>
