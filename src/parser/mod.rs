@@ -83,9 +83,7 @@ impl BlockchainParser {
     fn on_block(&mut self, block: &bitcoin::Block, height: u64) -> anyhow::Result<()> {
         self.callback.on_block(block, height)?;
         tracing::trace!(target: "parser", "on_block(height={}) called", height);
-        if self.callback.show_progress() {
-            self.print_progress(height);
-        }
+        self.print_progress(height);
         Ok(())
     }
 
