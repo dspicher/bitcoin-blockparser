@@ -178,10 +178,7 @@ impl Callback for SimpleStats {
     where
         Self: Sized,
     {
-        Command::new("simplestats")
-            .about("Shows various Blockchain stats")
-            .version("0.1")
-            .author("gcarq <egger.m@protonmail.com>")
+        Command::new("simplestats").about("Shows various Blockchain stats")
     }
 
     fn new(_: &ArgMatches) -> anyhow::Result<Self>

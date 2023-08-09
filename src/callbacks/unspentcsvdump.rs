@@ -28,8 +28,6 @@ impl crate::callbacks::Callback for UnspentCsvDump {
     {
         Command::new("unspentcsvdump")
             .about("Dumps the unspent outputs to CSV file")
-            .version("0.1")
-            .author("fsvm88 <fsvm88@gmail.com>")
             .arg(
                 Arg::new("dump-folder")
                     .help("Folder to store csv file")
