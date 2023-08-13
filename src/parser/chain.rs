@@ -21,7 +21,7 @@ impl ChainStorage {
         })
     }
 
-    /// Returns the next block and its height
+    /// Returns the block of a given height.
     #[must_use]
     pub fn get_block(&mut self, height: u64) -> Option<bitcoin::Block> {
         // Read block
