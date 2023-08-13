@@ -53,7 +53,9 @@ impl BlockchainParser {
         tracing::debug!(target: "parser", "Starting worker ...");
 
         self.on_start(self.cur_height)?;
-        while let Some(block) = self.chain_storage.get_block(self.cur_height) {
+        while let Some(header) = self.chain_storage.get_header(self.cur_height) {
+            self.on_header(&header, self.cur_height)?;
+            let block = self.chain_storage.get_block(self.cur_height).unwrap();
             self.on_block(&block, self.cur_height)?;
             self.cur_height += 1;
         }
@@ -76,6 +78,17 @@ impl BlockchainParser {
         tracing::info!(target: "parser", "Processing blocks starting from height {} ...", height);
         self.callback.on_start(height)?;
         tracing::trace!(target: "parser", "on_start() called");
+        Ok(())
+    }
+
+    /// Triggers the on_block() callback and updates statistics.
+    fn on_header(
+        &mut self,
+        header: &bitcoin::blockdata::block::Header,
+        height: u64,
+    ) -> anyhow::Result<()> {
+        self.callback.on_header(header, height)?;
+        tracing::trace!(target: "parser", "on_header(height={}) called", height);
         Ok(())
     }
 

@@ -43,6 +43,14 @@ impl Callback for Balances {
         Ok(())
     }
 
+    fn on_header(
+        &mut self,
+        _header: &bitcoin::blockdata::block::Header,
+        _block_height: u64,
+    ) -> anyhow::Result<()> {
+        Ok(())
+    }
+
     /// For each transaction in the block
     ///   1. apply input transactions (remove (TxID == prevTxIDOut and prevOutID == spentOutID))
     ///   2. apply output transactions (add (TxID + curOutID -> HashMapVal))

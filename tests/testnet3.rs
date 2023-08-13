@@ -20,3 +20,13 @@ fn test_blockdata_parsing() {
         assert_eq!(block.txdata.len(), 1);
     }
 }
+
+#[test]
+fn test_genesis_header() {
+    let header = STORAGE.lock().unwrap().get_header(0).unwrap();
+    assert_eq!(
+        header,
+        bitcoin::blockdata::constants::genesis_block(bitcoin::network::constants::Network::Testnet)
+            .header
+    );
+}

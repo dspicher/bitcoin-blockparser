@@ -41,6 +41,15 @@ impl BlkFile {
         }
     }
 
+    pub fn read_header(
+        &mut self,
+        offset: u64,
+    ) -> anyhow::Result<bitcoin::blockdata::block::Header> {
+        let reader = self.open()?;
+        reader.seek(SeekFrom::Start(offset))?;
+        reader.read_header()
+    }
+
     pub fn read_block(&mut self, offset: u64) -> anyhow::Result<bitcoin::Block> {
         let reader = self.open()?;
         reader.seek(SeekFrom::Start(offset))?;

@@ -80,6 +80,16 @@ fn test_bitcoin_genesis() {
 }
 
 #[test]
+fn test_genesis_header() {
+    let header = STORAGE.lock().unwrap().get_header(0).unwrap();
+    assert_eq!(
+        header,
+        bitcoin::blockdata::constants::genesis_block(bitcoin::network::constants::Network::Bitcoin)
+            .header
+    );
+}
+
+#[test]
 fn test_blockdata_parsing() {
     for height in 0..=169 {
         let block = STORAGE.lock().unwrap().get_block(height).unwrap();
@@ -96,4 +106,11 @@ fn test_blockdata_parsing() {
         tx.output.get(1).unwrap().value,
         40 * bitcoin::Amount::ONE_BTC.to_sat()
     );
+}
+
+#[test]
+fn test_timing() {
+    for height in 0..=169 {
+        STORAGE.lock().unwrap().get_header(height).unwrap();
+    }
 }
