@@ -17,6 +17,13 @@ pub trait Callback {
     /// Gets called shortly before the blocks are parsed.
     fn on_start(&mut self, block_height: u64) -> anyhow::Result<()>;
 
+    /// Gets called if a new header is available.
+    fn on_header(
+        &mut self,
+        _header: &bitcoin::blockdata::block::Header,
+        _block_height: u64,
+    ) -> anyhow::Result<()>;
+
     /// Gets called if a new block is available.
     fn on_block(&mut self, block: &bitcoin::Block, block_height: u64) -> anyhow::Result<()>;
 
