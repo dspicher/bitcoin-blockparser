@@ -6,14 +6,13 @@ static STORAGE: once_cell::sync::Lazy<
 
 #[test]
 fn test_blockdata_parsing() {
+    let genesis = STORAGE.lock().unwrap().get_block(0).unwrap();
     assert_eq!(
-        STORAGE
-            .lock()
-            .unwrap()
-            .get_block(0)
-            .unwrap()
-            .block_hash()
-            .to_string(),
+        genesis,
+        bitcoin::blockdata::constants::genesis_block(bitcoin::network::constants::Network::Testnet)
+    );
+    assert_eq!(
+        genesis.block_hash().to_string(),
         "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"
     );
     for height in 0..=120 {
