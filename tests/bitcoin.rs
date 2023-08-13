@@ -7,6 +7,10 @@ static STORAGE: once_cell::sync::Lazy<
 #[test]
 fn test_bitcoin_genesis() {
     let genesis = STORAGE.lock().unwrap().get_block(0).unwrap();
+    assert_eq!(
+        genesis,
+        bitcoin::blockdata::constants::genesis_block(bitcoin::network::constants::Network::Bitcoin)
+    );
 
     assert_eq!(285, genesis.size());
 
