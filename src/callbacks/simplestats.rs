@@ -186,14 +186,6 @@ impl Callback for SimpleStats {
         Ok(())
     }
 
-    fn on_header(
-        &mut self,
-        _header: &bitcoin::blockdata::block::Header,
-        _block_height: u64,
-    ) -> anyhow::Result<()> {
-        Ok(())
-    }
-
     fn on_block(&mut self, block: &bitcoin::Block, block_height: u64) -> anyhow::Result<()> {
         self.n_valid_blocks += 1;
         self.n_tx += block.txdata.len();
