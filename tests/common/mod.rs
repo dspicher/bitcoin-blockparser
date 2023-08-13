@@ -1,6 +1,6 @@
 pub fn storage(datadir: &str, max_height: u64) -> bitcoin_blockparser::parser::chain::ChainStorage {
     let options = bitcoin_blockparser::ParserOptions {
-        callback: Box::new(bitcoin_blockparser::callbacks::simplestats::SimpleStats::default()),
+        callback: Box::<bitcoin_blockparser::callbacks::simplestats::SimpleStats>::default(),
         coin: datadir.parse().unwrap(),
         verify: true,
         blockchain_dir: std::path::PathBuf::from(format!("tests/testdata/{datadir}")),

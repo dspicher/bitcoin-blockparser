@@ -27,6 +27,6 @@ jobs:
         cargo audit -D warnings
         cargo check
         cargo build
-        cargo clippy -- -Dwarnings -D clippy::pedantic -D clippy::dbg-macro -A clippy::missing-errors-doc -A clippy::missing-panics-doc -A clippy::doc-markdown -A clippy::cast-precision-loss -A clippy::cast-possible-truncation -A clippy::module-name-repetitions
+        cargo clippy --all-targets --all-features -- -Dwarnings -D clippy::pedantic -D clippy::dbg-macro -A clippy::missing-errors-doc -A clippy::missing-panics-doc -A clippy::doc-markdown -A clippy::cast-precision-loss -A clippy::cast-possible-truncation -A clippy::module-name-repetitions
         cargo test
         RUSTC_BOOTSTRAP=1 cargo udeps
