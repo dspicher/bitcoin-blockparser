@@ -18,14 +18,6 @@ impl Callback for OpReturn {
         Ok(())
     }
 
-    fn on_header(
-        &mut self,
-        _header: &bitcoin::blockdata::block::Header,
-        _block_height: u64,
-    ) -> anyhow::Result<()> {
-        Ok(())
-    }
-
     fn on_block(&mut self, block: &bitcoin::Block, block_height: u64) -> anyhow::Result<()> {
         for tx in &block.txdata {
             for out in &tx.output {
@@ -49,10 +41,6 @@ impl Callback for OpReturn {
                 }
             }
         }
-        Ok(())
-    }
-
-    fn on_complete(&mut self, _: u64) -> anyhow::Result<()> {
         Ok(())
     }
 }
