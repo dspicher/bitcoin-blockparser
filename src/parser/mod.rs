@@ -51,7 +51,8 @@ impl BlockchainParser {
         while let Some(header) = self.chain_storage.get_header(self.cur_height) {
             Self::on_header(&header, self.cur_height);
             let block = self.chain_storage.get_block(self.cur_height).unwrap();
-            self.on_block(&block, self.cur_height);
+            Self::on_block(&block, self.cur_height);
+            self.print_progress(self.cur_height);
             self.cur_height += 1;
         }
         self.on_complete(self.cur_height.saturating_sub(1));
@@ -77,9 +78,8 @@ impl BlockchainParser {
         tracing::trace!(target: "parser", "on_header(height={}) called", height);
     }
 
-    fn on_block(&mut self, _block: &bitcoin::Block, height: u64) {
+    fn on_block(_block: &bitcoin::Block, height: u64) {
         tracing::trace!(target: "parser", "on_block(height={}) called", height);
-        self.print_progress(height);
     }
 
     fn on_complete(&mut self, height: u64) {
