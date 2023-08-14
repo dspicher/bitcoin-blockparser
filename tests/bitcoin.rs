@@ -109,7 +109,7 @@ fn test_blockdata_parsing() {
 }
 
 #[test]
-fn test_timing() {
+fn test_headers() {
     let mut storage = storage();
     for height in 0..=169 {
         storage.get_header(height).unwrap();
