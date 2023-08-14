@@ -39,12 +39,7 @@ fn main() {
         }
     };
 
-    let mut parser = BlockchainParser::new(options, chain_storage);
-    match parser.start() {
-        Ok(_) => tracing::info!(target: "main", "Fin."),
-        Err(why) => {
-            tracing::error!("{}", why);
-            std::process::exit(1);
-        }
-    }
+    let mut parser = BlockchainParser::new(&options, chain_storage);
+    parser.start();
+    tracing::info!(target: "main", "Fin.");
 }

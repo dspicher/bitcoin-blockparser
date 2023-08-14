@@ -1,14 +1,7 @@
 use clap::{Arg, Command};
 
-use crate::callbacks::balances::Balances;
-use crate::callbacks::opreturn::OpReturn;
-use crate::callbacks::simplestats::SimpleStats;
-use crate::callbacks::unspentcsvdump::UnspentCsvDump;
-use crate::callbacks::Callback;
-
 use crate::parser::types::{Bitcoin, CoinType};
 
-pub mod callbacks;
 pub mod parser;
 
 #[derive(Copy, Clone)]
@@ -44,8 +37,6 @@ impl std::fmt::Display for BlockHeightRange {
 
 /// Holds all available user arguments
 pub struct ParserOptions {
-    // Name of the callback which gets executed for each block. (See callbacks/mod.rs)
-    pub callback: Box<dyn Callback>,
     // Holds the relevant coin parameters we need for parsing
     pub coin: CoinType,
     // Enable this if you want to check the chain index integrity and merkle root for each block.
@@ -94,20 +85,6 @@ pub fn command() -> Command {
         .value_name("HEIGHT")
         .value_parser(clap::value_parser!(u64))
         .help("Specify last block for parsing (inclusive) (default: all known blocks)"))
-    // Add callbacks
-    .subcommand(Command::new("unspentcsvdump").about("Dumps the unspent outputs to CSV file").arg(
-        Arg::new("dump-folder")
-            .help("Folder to store csv file")
-            .index(1)
-            .required(true)))
-    .subcommand(Command::new("simplestats").about("Shows various Blockchain stats"))
-    .subcommand(Command::new("balances").about("Dumps all addresses with non-zero balance to CSV file").arg(
-        Arg::new("dump-folder")
-            .help("Folder to store csv file")
-            .index(1)
-            .required(true),
-    ))
-    .subcommand(Command::new("opreturn").about("Shows embedded OP_RETURN data that is representable as UTF8"))
 }
 
 /// Returns default directory. TODO: test on windows
@@ -132,26 +109,7 @@ pub fn parse_args(matches: &clap::ArgMatches) -> anyhow::Result<ParserOptions> {
     let end = matches.get_one::<u64>("end").copied();
     let range = BlockHeightRange::new(start, end)?;
 
-    // Set callback
-    let callback: Box<dyn Callback>;
-    if let Some(matches) = matches.subcommand_matches("simplestats") {
-        callback = Box::new(SimpleStats::new(matches)?);
-    } else if let Some(matches) = matches.subcommand_matches("unspentcsvdump") {
-        callback = Box::new(UnspentCsvDump::new(matches)?);
-    } else if let Some(matches) = matches.subcommand_matches("balances") {
-        callback = Box::new(Balances::new(matches)?);
-    } else if let Some(matches) = matches.subcommand_matches("opreturn") {
-        callback = Box::new(OpReturn::new(matches)?);
-    } else {
-        clap::error::Error::<clap::error::DefaultFormatter>::raw(
-            clap::error::ErrorKind::MissingSubcommand,
-            "error: No valid callback specified.\nFor more information try --help",
-        )
-        .exit();
-    }
-
     let options = ParserOptions {
-        callback,
         coin,
         verify,
         blockchain_dir,
@@ -165,49 +123,30 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_args_subcommand() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        parse_args(&command().get_matches_from([
-            "bitcoin-blockparser",
-            "unspentcsvdump",
-            tmp_dir.path().to_str().unwrap(),
-        ]))
-        .unwrap();
-        parse_args(&command().get_matches_from(["bitcoin-blockparser", "simplestats"])).unwrap();
-        parse_args(&command().get_matches_from([
-            "bitcoin-blockparser",
-            "balances",
-            tmp_dir.path().to_str().unwrap(),
-        ]))
-        .unwrap();
-        parse_args(&command().get_matches_from(["bitcoin-blockparser", "opreturn"])).unwrap();
-    }
-
-    #[test]
     fn test_args_coin() {
-        let args = ["bitcoin-blockparser", "simplestats"];
+        let args = ["bitcoin-blockparser"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(options.coin.name, "Bitcoin");
 
-        let args = ["bitcoin-blockparser", "-c", "testnet3", "simplestats"];
+        let args = ["bitcoin-blockparser", "-c", "testnet3"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(options.coin.name, "TestNet3");
     }
 
     #[test]
     fn test_args_verify() {
-        let args = ["bitcoin-blockparser", "simplestats"];
+        let args = ["bitcoin-blockparser"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert!(!options.verify);
 
-        let args = ["bitcoin-blockparser", "--verify", "simplestats"];
+        let args = ["bitcoin-blockparser", "--verify"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert!(options.verify);
     }
 
     #[test]
     fn test_args_blockchain_dir() {
-        let args = ["bitcoin-blockparser", "simplestats"];
+        let args = ["bitcoin-blockparser"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.blockchain_dir,
@@ -216,23 +155,18 @@ mod tests {
                 .join(std::path::Path::new(".bitcoin").join("blocks"))
         );
 
-        let args = ["bitcoin-blockparser", "-d", "foo", "simplestats"];
+        let args = ["bitcoin-blockparser", "-d", "foo"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(options.blockchain_dir.to_str().unwrap(), "foo");
 
-        let args = [
-            "bitcoin-blockparser",
-            "--blockchain-dir",
-            "foo",
-            "simplestats",
-        ];
+        let args = ["bitcoin-blockparser", "--blockchain-dir", "foo"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(options.blockchain_dir.to_str().unwrap(), "foo");
     }
 
     #[test]
     fn test_args_start() {
-        let args = ["bitcoin-blockparser", "simplestats"];
+        let args = ["bitcoin-blockparser"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.range,
@@ -242,7 +176,7 @@ mod tests {
             }
         );
 
-        let args = ["bitcoin-blockparser", "-s", "10", "simplestats"];
+        let args = ["bitcoin-blockparser", "-s", "10"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.range,
@@ -252,7 +186,7 @@ mod tests {
             }
         );
 
-        let args = ["bitcoin-blockparser", "--start", "10", "simplestats"];
+        let args = ["bitcoin-blockparser", "--start", "10"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.range,
@@ -265,7 +199,7 @@ mod tests {
 
     #[test]
     fn test_args_end() {
-        let args = ["bitcoin-blockparser", "-e", "10", "simplestats"];
+        let args = ["bitcoin-blockparser", "-e", "10"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.range,
@@ -275,7 +209,7 @@ mod tests {
             }
         );
 
-        let args = ["bitcoin-blockparser", "--end", "10", "simplestats"];
+        let args = ["bitcoin-blockparser", "--end", "10"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.range,
@@ -288,7 +222,7 @@ mod tests {
 
     #[test]
     fn test_args_start_and_end() {
-        let args = ["bitcoin-blockparser", "-s", "1", "-e", "2", "simplestats"];
+        let args = ["bitcoin-blockparser", "-s", "1", "-e", "2"];
         let options = parse_args(&command().get_matches_from(args)).unwrap();
         assert_eq!(
             options.range,
@@ -298,7 +232,7 @@ mod tests {
             }
         );
 
-        let args = ["bitcoin-blockparser", "-s", "2", "-e", "1", "simplestats"];
+        let args = ["bitcoin-blockparser", "-s", "2", "-e", "1"];
         assert!(parse_args(&command().get_matches_from(args)).is_err());
     }
 }
