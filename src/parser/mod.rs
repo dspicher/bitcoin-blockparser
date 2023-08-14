@@ -9,7 +9,6 @@ mod index;
 pub mod reader;
 pub mod types;
 
-/// Small struct to hold statistics together
 struct WorkerStats {
     pub started_at: Instant,
     pub last_log: Instant,
@@ -27,13 +26,12 @@ impl WorkerStats {
 }
 
 pub struct BlockchainParser {
-    chain_storage: ChainStorage, // Hash storage with the longest chain
-    stats: WorkerStats,          // struct for thread management & statistics
+    chain_storage: ChainStorage,
+    stats: WorkerStats,
     cur_height: u64,
 }
 
 impl BlockchainParser {
-    /// Instantiates a new Parser.
     #[must_use]
     pub fn new(options: &ParserOptions, chain_storage: ChainStorage) -> Self {
         tracing::info!(target: "parser", "Parsing {} blockchain ...", options.coin.name);
@@ -58,7 +56,6 @@ impl BlockchainParser {
         self.on_complete(self.cur_height.saturating_sub(1));
     }
 
-    /// Returns number of remaining blocks
     #[must_use]
     pub fn remaining(&self) -> u64 {
         self.chain_storage

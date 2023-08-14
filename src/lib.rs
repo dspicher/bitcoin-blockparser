@@ -35,15 +35,10 @@ impl std::fmt::Display for BlockHeightRange {
     }
 }
 
-/// Holds all available user arguments
 pub struct ParserOptions {
-    // Holds the relevant coin parameters we need for parsing
     pub coin: CoinType,
-    // Enable this if you want to check the chain index integrity and merkle root for each block.
     pub verify: bool,
-    // Path to directory where blk.dat files are stored
     pub blockchain_dir: std::path::PathBuf,
-    // Range which is considered for parsing
     pub range: BlockHeightRange,
 }
 
@@ -52,7 +47,6 @@ pub fn command() -> Command {
     let coins = ["bitcoin", "testnet3"];
     Command::new("bitcoin-blockparser")
     .version(clap::crate_version!())
-    // Add flags
     .arg(Arg::new("verify")
         .long("verify")
         .action(clap::ArgAction::SetTrue)
@@ -62,7 +56,6 @@ pub fn command() -> Command {
         .short('v')
         .action(clap::ArgAction::Count)
         .help("Increases verbosity level. Info=0, Debug=1, Trace=2 (default: 0)"))
-    // Add options
     .arg(Arg::new("coin")
         .short('c')
         .long("coin")
@@ -87,14 +80,12 @@ pub fn command() -> Command {
         .help("Specify last block for parsing (inclusive) (default: all known blocks)"))
 }
 
-/// Returns default directory. TODO: test on windows
 fn get_absolute_blockchain_dir(coin: &CoinType) -> std::path::PathBuf {
     dirs::home_dir()
         .expect("Unable to get home path from env!")
         .join(&coin.default_folder)
 }
 
-/// Parses args or panics if some requirements are not met.
 pub fn parse_args(matches: &clap::ArgMatches) -> anyhow::Result<ParserOptions> {
     let verify = matches.get_flag("verify");
 

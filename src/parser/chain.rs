@@ -3,10 +3,9 @@ use crate::parser::index::ChainIndex;
 use crate::parser::types::CoinType;
 use crate::ParserOptions;
 
-/// Manages the index and data of longest valid chain
 pub struct ChainStorage {
     chain_index: ChainIndex,
-    blk_files: std::collections::HashMap<u64, BlkFile>, // maps blk_index to BlkFile
+    blk_files: std::collections::HashMap<u64, BlkFile>,
     coin: CoinType,
     verify: bool,
 }
@@ -21,30 +20,24 @@ impl ChainStorage {
         })
     }
 
-    /// Returns the header of a given height.
     #[must_use]
     pub fn get_header(&mut self, height: u64) -> Option<bitcoin::blockdata::block::Header> {
-        // Read block
         let block_meta = self.chain_index.get(height)?;
         let blk_file = self.blk_files.get_mut(&block_meta.blk_index)?;
         let header = blk_file.read_header(block_meta.data_offset).ok()?;
 
-        // Check if blk file can be closed
         if height == self.chain_index.max_height_by_blk(block_meta.blk_index) {
             blk_file.close();
         }
         Some(header)
     }
 
-    /// Returns the block of a given height.
     #[must_use]
     pub fn get_block(&mut self, height: u64) -> Option<bitcoin::Block> {
-        // Read block
         let block_meta = self.chain_index.get(height)?;
         let blk_file = self.blk_files.get_mut(&block_meta.blk_index)?;
         let block = blk_file.read_block(block_meta.data_offset).ok()?;
 
-        // Check if blk file can be closed
         if height == self.chain_index.max_height_by_blk(block_meta.blk_index) {
             blk_file.close();
         }
@@ -56,8 +49,6 @@ impl ChainStorage {
         Some(block)
     }
 
-    /// Verifies the given block in a chain.
-    /// Panics if not valid
     fn verify(&self, block: &bitcoin::Block, height: u64) -> anyhow::Result<()> {
         assert!(block.check_merkle_root());
         if height == 0 {

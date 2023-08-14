@@ -20,7 +20,6 @@ fn main() {
             }
         };
 
-    // Apply log filter based on verbosity
     tracing::info!(target: "main", "Starting bitcoin-blockparser v{} ...", env!("CARGO_PKG_VERSION"));
     if options.verify {
         tracing::info!(target: "main", "Configured to verify merkle roots and block hashes");

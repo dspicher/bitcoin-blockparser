@@ -7,7 +7,6 @@ use anyhow::Context;
 
 use crate::parser::reader::BlockchainRead;
 
-/// Holds all necessary data about a raw blk file
 #[derive(Debug)]
 pub struct BlkFile {
     pub path: PathBuf,
@@ -24,7 +23,6 @@ impl BlkFile {
         }
     }
 
-    /// Opens the file handle (does nothing if the file has been opened already)
     fn open(&mut self) -> anyhow::Result<&mut std::io::BufReader<File>> {
         if self.reader.is_none() {
             tracing::debug!(target: "blkfile", "Opening {} ...", &self.path.display());
@@ -33,7 +31,6 @@ impl BlkFile {
         Ok(self.reader.as_mut().unwrap())
     }
 
-    /// Closes the file handle
     pub fn close(&mut self) {
         tracing::debug!(target: "blkfile", "Closing {} ...", &self.path.display());
         if self.reader.is_some() {
@@ -56,7 +53,6 @@ impl BlkFile {
         reader.read_block()
     }
 
-    /// Collects all blk*.dat paths in the given directory
     pub fn from_path(path: &Path) -> anyhow::Result<HashMap<u64, BlkFile>> {
         tracing::info!(target: "blkfile", "Reading files from {} ...", path.display());
         let mut collected = HashMap::with_capacity(4000);
@@ -76,9 +72,7 @@ impl BlkFile {
                             .to_str()
                             .context("invalid path")?,
                     );
-                    // Check if it's a valid blk file
                     if let Some(index) = BlkFile::parse_blk_index(&file_name, "blk", ".dat") {
-                        // Build BlkFile structures
                         let size = std::fs::metadata(path.as_path())?.len();
                         tracing::trace!(target: "blkfile", "Adding {} ... (index: {}, size: {})", path.display(), index, size);
                         collected.insert(index, BlkFile::new(path, size));
@@ -98,8 +92,6 @@ impl BlkFile {
         }
     }
 
-    /// Resolves a PathBuf for the given entry.
-    /// Also resolves symlinks if present.
     fn resolve_path(entry: &DirEntry) -> std::io::Result<PathBuf> {
         if entry.file_type()?.is_symlink() {
             std::fs::read_link(entry.path())
@@ -108,11 +100,8 @@ impl BlkFile {
         }
     }
 
-    /// Identifies blk file and parses index
-    /// Returns None if this is no blk file
     fn parse_blk_index(file_name: &str, prefix: &str, ext: &str) -> Option<u64> {
         if file_name.starts_with(prefix) && file_name.ends_with(ext) {
-            // Parse blk_index, this means we extract 42 from blk000042.dat
             file_name[prefix.len()..(file_name.len() - ext.len())]
                 .parse::<u64>()
                 .ok()
