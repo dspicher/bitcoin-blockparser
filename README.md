@@ -9,6 +9,8 @@ bitcoin-blockparser is a Bitcoin Blockchain Parser written in **Rust language**.
 It allows extraction of various data types (blocks, transactions, scripts, public keys/hashes, balances, ...)
 and UTXO dumps from Bitcoin based blockchains.
 
+This is a fork of the [rusty-blockparser](https://github.com/gcarq/rusty-blockparser) crate, which also contains support for other cryptocurrencies.
+
 ##### **Currently Supported Blockchains:**
 
  `Bitcoin` and `BitcoinTestnet3`.
@@ -79,9 +81,6 @@ this includes transactions of type P2SH, P2PKH, P2PK, P2WSH, P2WPKH, P2TR, OP_RE
 ## Contributing
 
 Use the issue tracker to report problems, suggestions and questions. You may also contribute by submitting pull requests.
-
-If you find this project helpful, please consider making a donation:
-`1LFidBTeg5joAqjw35ksebiNkVM8azFM1K`
 
 ## TODO
 
