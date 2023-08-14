@@ -9,11 +9,10 @@ use crate::ParserOptions;
 const BLOCK_VALID_CHAIN: u64 = 4;
 const BLOCK_HAVE_DATA: u64 = 8;
 
-/// Holds the index of longest valid chain
 pub struct ChainIndex {
     max_height: u64,
     block_index: std::collections::HashMap<u64, BlockIndexRecord>,
-    max_height_blk_index: std::collections::HashMap<u64, u64>, // Maps blk_index to max_height found in the file
+    max_height_blk_index: std::collections::HashMap<u64, u64>,
 }
 
 impl ChainIndex {
@@ -41,7 +40,6 @@ impl ChainIndex {
             Some(_) | None => max_known_height,
         };
 
-        // Filter to only keep relevant block index
         if !options.range.is_default() {
             tracing::info!(target: "index", "Trimming block index from height {} to {} ...", min_height, max_height);
             block_index.retain(|height, _| {
@@ -56,28 +54,23 @@ impl ChainIndex {
         })
     }
 
-    /// Returns the `BlockIndexRecord` for the given height
     pub fn get(&self, height: u64) -> Option<&BlockIndexRecord> {
         self.block_index.get(&height)
     }
 
-    /// Returns the maximum height known
     pub fn max_height(&self) -> u64 {
         self.max_height
     }
 
-    /// Returns the maximum height that can be found in the given blk_index
     pub fn max_height_by_blk(&self, blk_index: u64) -> u64 {
         *self.max_height_blk_index.get(&blk_index).unwrap()
     }
 }
 
-/// Holds the metadata where the block data is stored,
-/// See https://bitcoin.stackexchange.com/questions/28168/what-are-the-keys-used-in-the-blockchain-leveldb-ie-what-are-the-keyvalue-pair
 pub struct BlockIndexRecord {
     pub block_hash: sha256d::Hash,
     pub blk_index: u64,
-    pub data_offset: u64, // offset within the blk file
+    pub data_offset: u64,
     version: u64,
     height: u64,
     status: u64,

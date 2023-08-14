@@ -2,24 +2,18 @@ use bitcoin::hashes::sha256d;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-/// Trait to specify the underlying coin of a blockchain
-/// Needs a proper magic value and a network id for address prefixes
 pub trait Coin {
-    // Human readable coin name
     fn name(&self) -> String;
-    // Magic value to identify blocks
+
     fn magic(&self) -> u32;
-    // https://en.bitcoin.it/wiki/List_of_address_prefixes
+
     fn version_id(&self) -> u8;
-    // Returns genesis hash
+
     fn genesis(&self) -> sha256d::Hash;
-    // Default working directory to look for datadir, for example .bitcoin
+
     fn default_folder(&self) -> PathBuf;
 }
 
-// Implemented blockchain types.
-// If you want to add you own coin, create a struct with a Coin implementation
-// and add the coin name to from_str() below
 pub struct Bitcoin;
 pub struct TestNet3;
 
@@ -42,7 +36,6 @@ impl Coin for Bitcoin {
     }
 }
 
-/// Bitcoin testnet3
 impl Coin for TestNet3 {
     fn name(&self) -> String {
         String::from("TestNet3")
@@ -63,7 +56,6 @@ impl Coin for TestNet3 {
 }
 
 #[derive(Clone)]
-// Holds the selected coin type information
 pub struct CoinType {
     pub name: String,
     pub magic: u32,

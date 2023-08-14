@@ -14,7 +14,6 @@ fn test_bitcoin_genesis() {
 
     assert_eq!(285, genesis.size());
 
-    // Block Header
     assert_eq!(0x0000_0001, genesis.header.version.to_consensus());
     assert_eq!(
         "0000000000000000000000000000000000000000000000000000000000000000",
@@ -29,7 +28,6 @@ fn test_bitcoin_genesis() {
         format!("{}", &genesis.header.block_hash())
     );
 
-    // Check against computed merkle root
     assert_eq!(
         &genesis.header.merkle_root,
         &genesis.compute_merkle_root().unwrap()
@@ -38,11 +36,9 @@ fn test_bitcoin_genesis() {
     assert_eq!(0x1d00_ffff, genesis.header.bits.to_consensus());
     assert_eq!(2_083_236_893, genesis.header.nonce);
 
-    // Tx
     assert_eq!(0x01, genesis.txdata.len());
     assert_eq!(0x0000_0001, genesis.txdata[0].version);
 
-    // Tx Inputs
     assert_eq!(0x01, genesis.txdata[0].input.len());
     assert_eq!(
         "0000000000000000000000000000000000000000000000000000000000000000",
@@ -66,7 +62,6 @@ fn test_bitcoin_genesis() {
         genesis.txdata[0].input[0].sequence.to_consensus_u32()
     );
 
-    // Tx Outputs
     assert_eq!(0x01, genesis.txdata[0].output.len());
     assert_eq!(
         u64::from_be(0x00f2_052a_0100_0000),
