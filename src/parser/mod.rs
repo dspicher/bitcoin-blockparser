@@ -14,7 +14,6 @@ struct WorkerStats {
     pub started_at: Instant,
     pub last_log: Instant,
     pub last_height: u64,
-    pub measure_frame: Duration,
 }
 
 impl WorkerStats {
@@ -23,7 +22,6 @@ impl WorkerStats {
             started_at: Instant::now(),
             last_log: Instant::now(),
             last_height: start_range,
-            measure_frame: Duration::from_secs(10),
         }
     }
 }
@@ -92,10 +90,11 @@ impl BlockchainParser {
     }
 
     fn print_progress(&mut self, height: u64) {
+        let measure_frame = 10;
         let now = Instant::now();
-        let blocks_speed = (height - self.stats.last_height) / self.stats.measure_frame.as_secs();
+        let blocks_speed = (height - self.stats.last_height) / measure_frame;
 
-        if now - self.stats.last_log > self.stats.measure_frame {
+        if now - self.stats.last_log > Duration::from_secs(measure_frame) {
             tracing::info!(target: "parser", "Status: {:7} Blocks processed. (remaining: {:7}, speed: {:5.2} blocks/s)",
               height, self.remaining(), blocks_speed);
             self.stats.last_log = now;
