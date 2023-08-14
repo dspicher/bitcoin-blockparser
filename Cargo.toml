@@ -20,5 +20,4 @@ tracing-subscriber = { version = "0.3.17", features = [ "env-filter", "fmt", "an
 
 [dev-dependencies]
 hex = "0.4.3"
-once_cell = "1.18.0"
 tempfile =  "3.7.0"
