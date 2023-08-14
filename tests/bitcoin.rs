@@ -1,12 +1,12 @@
 mod common;
 
-static STORAGE: once_cell::sync::Lazy<
-    std::sync::Mutex<bitcoin_blockparser::parser::chain::ChainStorage>,
-> = once_cell::sync::Lazy::new(|| std::sync::Mutex::new(common::storage("bitcoin", 170)));
+fn storage() -> bitcoin_blockparser::parser::chain::ChainStorage {
+    common::storage("bitcoin", 170)
+}
 
 #[test]
 fn test_bitcoin_genesis() {
-    let genesis = STORAGE.lock().unwrap().get_block(0).unwrap();
+    let genesis = storage().get_block(0).unwrap();
     assert_eq!(
         genesis,
         bitcoin::blockdata::constants::genesis_block(bitcoin::network::constants::Network::Bitcoin)
@@ -76,7 +76,7 @@ fn test_bitcoin_genesis() {
 
 #[test]
 fn test_genesis_header() {
-    let header = STORAGE.lock().unwrap().get_header(0).unwrap();
+    let header = storage().get_header(0).unwrap();
     assert_eq!(
         header,
         bitcoin::blockdata::constants::genesis_block(bitcoin::network::constants::Network::Bitcoin)
@@ -86,11 +86,12 @@ fn test_genesis_header() {
 
 #[test]
 fn test_blockdata_parsing() {
+    let mut storage = storage();
     for height in 0..=169 {
-        let block = STORAGE.lock().unwrap().get_block(height).unwrap();
+        let block = storage.get_block(height).unwrap();
         assert_eq!(block.txdata.len(), 1);
     }
-    let first_tx_block = STORAGE.lock().unwrap().get_block(170).unwrap();
+    let first_tx_block = storage.get_block(170).unwrap();
     assert_eq!(first_tx_block.txdata.len(), 2);
 
     let tx = first_tx_block.txdata.get(1).unwrap();
@@ -105,7 +106,8 @@ fn test_blockdata_parsing() {
 
 #[test]
 fn test_timing() {
+    let mut storage = storage();
     for height in 0..=169 {
-        STORAGE.lock().unwrap().get_header(height).unwrap();
+        storage.get_header(height).unwrap();
     }
 }

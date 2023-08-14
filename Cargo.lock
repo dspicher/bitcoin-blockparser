@@ -94,7 +94,6 @@ dependencies = [
  "clap",
  "dirs",
  "hex",
- "once_cell",
  "rusty-leveldb",
  "tempfile",
  "tracing",
