@@ -12,5 +12,6 @@ diesel::table! {
         weight -> BigInt,
         turnover -> BigInt,
         miner_reward -> BigInt,
+        pool -> Nullable<Text>,
     }
 }

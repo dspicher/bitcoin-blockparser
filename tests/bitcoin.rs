@@ -133,4 +133,5 @@ fn test_blocks_db() {
         u64::try_from(parser.db().block(50).unwrap().miner_reward).unwrap(),
         50 * bitcoin::Amount::ONE_BTC.to_sat()
     );
+    assert!(parser.db().block(75).unwrap().pool.is_none());
 }
