@@ -33,9 +33,9 @@ impl Db {
         }
     }
 
-    pub fn insert_block(&self, block: Block) -> anyhow::Result<usize> {
+    pub fn insert_blocks(&self, blocks: Vec<Block>) -> anyhow::Result<usize> {
         Ok(diesel::insert_into(blocks::table)
-            .values(block)
+            .values(blocks)
             .execute(&mut self.pool.get()?)?)
     }
 
