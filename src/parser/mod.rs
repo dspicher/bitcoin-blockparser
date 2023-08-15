@@ -53,13 +53,32 @@ impl BlockchainParser {
         tracing::debug!(target: "parser", "Starting worker ...");
 
         self.on_start(self.cur_height);
+        let block_buffer_size = 2;
+        let mut blocks = Vec::with_capacity(block_buffer_size);
         while let Some(header) = self.chain_storage.get_header(self.cur_height) {
             Self::on_header(&header, self.cur_height);
             let block = self.chain_storage.get_block(self.cur_height).unwrap();
-            self.on_block(&block, self.cur_height)?;
+
+            tracing::trace!(target: "parser", "on_block(height={}) called", self.cur_height);
+            blocks.push(crate::db::Block {
+                height: self.cur_height.try_into()?,
+                version: block.header.version.to_consensus(),
+                time: block.header.time.try_into()?,
+                encoded_target: block.header.bits.to_consensus().try_into()?,
+                nonce: block.header.nonce.try_into()?,
+                tx_count: block.txdata.len().try_into()?,
+                size: block.size().try_into()?,
+                weight: block.weight().to_wu().try_into()?,
+            });
+            if blocks.len() == block_buffer_size {
+                self.db.insert_blocks(blocks)?;
+                blocks = Vec::with_capacity(block_buffer_size);
+            }
             self.print_progress(self.cur_height);
             self.cur_height += 1;
         }
+
+        self.db.insert_blocks(blocks)?;
         self.on_complete(self.cur_height.saturating_sub(1));
         Ok(())
     }
@@ -81,25 +100,6 @@ impl BlockchainParser {
 
     fn on_header(_header: &bitcoin::blockdata::block::Header, height: u64) {
         tracing::trace!(target: "parser", "on_header(height={}) called", height);
-    }
-
-    fn on_block(
-        &mut self,
-        block: &bitcoin::Block,
-        height: u64,
-    ) -> anyhow::Result<()> {
-        tracing::trace!(target: "parser", "on_block(height={}) called", height);
-        self.db.insert_block(crate::db::Block {
-            height: self.cur_height.try_into()?,
-            version: block.header.version.to_consensus(),
-            time: block.header.time.try_into()?,
-            encoded_target: block.header.bits.to_consensus().try_into()?,
-            nonce: block.header.nonce.try_into()?,
-            tx_count: block.txdata.len().try_into()?,
-            size: block.size().try_into()?,
-            weight: block.weight().to_wu().try_into()?,
-        })?;
-        Ok(())
     }
 
     fn on_complete(&mut self, height: u64) {
