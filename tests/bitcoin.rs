@@ -121,4 +121,12 @@ fn test_blocks_db() {
     let mut parser = parser();
     parser.start().unwrap();
     assert_eq!(parser.db().blocks_count().unwrap(), 171);
+    assert_eq!(
+        u64::try_from(parser.db().block(100).unwrap().turnover).unwrap(),
+        50 * bitcoin::Amount::ONE_BTC.to_sat()
+    );
+    assert_eq!(
+        u64::try_from(parser.db().block(170).unwrap().turnover).unwrap(),
+        100 * bitcoin::Amount::ONE_BTC.to_sat()
+    );
 }

@@ -6,5 +6,6 @@ CREATE TABLE blocks (
     nonce BIGINT NOT NULL,
     tx_count INTEGER NOT NULL,
     size INTEGER NOT NULL,
-    weight BIGINT NOT NULL
+    weight BIGINT NOT NULL,
+    turnover BIGINT NOT NULL
 );
