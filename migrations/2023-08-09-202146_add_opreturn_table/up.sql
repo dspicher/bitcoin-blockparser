@@ -7,5 +7,6 @@ CREATE TABLE blocks (
     tx_count INTEGER NOT NULL,
     size INTEGER NOT NULL,
     weight BIGINT NOT NULL,
-    turnover BIGINT NOT NULL
+    turnover BIGINT NOT NULL,
+    miner_reward BIGINT NOT NULL
 );

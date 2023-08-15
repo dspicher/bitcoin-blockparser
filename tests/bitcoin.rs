@@ -129,4 +129,8 @@ fn test_blocks_db() {
         u64::try_from(parser.db().block(170).unwrap().turnover).unwrap(),
         100 * bitcoin::Amount::ONE_BTC.to_sat()
     );
+    assert_eq!(
+        u64::try_from(parser.db().block(50).unwrap().miner_reward).unwrap(),
+        50 * bitcoin::Amount::ONE_BTC.to_sat()
+    );
 }
