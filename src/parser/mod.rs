@@ -65,6 +65,10 @@ impl BlockchainParser {
                 .flat_map(|tx| tx.output.iter().map(|output| output.value))
                 .sum();
 
+            let miner_reward = block
+                .coinbase()
+                .map_or_else(|| 0, |cb| cb.output.iter().map(|output| output.value).sum());
+
             tracing::trace!(target: "parser", "on_block(height={}) called", self.cur_height);
             blocks.push(crate::db::Block {
                 height: self.cur_height.try_into()?,
@@ -76,6 +80,7 @@ impl BlockchainParser {
                 size: block.size().try_into()?,
                 weight: block.weight().to_wu().try_into()?,
                 turnover: turnover.try_into()?,
+                miner_reward: miner_reward.try_into()?,
             });
             if blocks.len() == block_buffer_size {
                 self.db.insert_blocks(blocks)?;

@@ -11,5 +11,6 @@ diesel::table! {
         size -> Integer,
         weight -> BigInt,
         turnover -> BigInt,
+        miner_reward -> BigInt,
     }
 }
