@@ -6,7 +6,11 @@ pub type Pool =
 pub trait Managed {
     #[must_use]
     fn open(db_url: &str, migrations: diesel_migrations::EmbeddedMigrations) -> Pool {
-        tracing::info!("opening in-memory database");
+        if db_url == ":memory:" {
+            tracing::info!("opening in-memory database");
+        } else {
+            tracing::info!("opening database {db_url}");
+        }
         let db = memdb_pool(db_url);
         create_tables(&db, migrations);
         db
