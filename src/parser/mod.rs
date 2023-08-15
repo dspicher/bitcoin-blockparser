@@ -1,8 +1,5 @@
 use std::time::{Duration, Instant};
 
-use diesel::connection::TransactionManager;
-use diesel::RunQueryDsl;
-
 use crate::parser::chain::ChainStorage;
 use crate::ParserOptions;
 
@@ -56,24 +53,13 @@ impl BlockchainParser {
         tracing::debug!(target: "parser", "Starting worker ...");
 
         self.on_start(self.cur_height);
-        let mut conn = self.db.pool.get()?;
-        diesel::r2d2::PoolTransactionManager::begin_transaction(&mut conn)?;
         while let Some(header) = self.chain_storage.get_header(self.cur_height) {
             Self::on_header(&header, self.cur_height);
             let block = self.chain_storage.get_block(self.cur_height).unwrap();
-            self.on_block(&block, self.cur_height, &mut conn)?;
+            self.on_block(&block, self.cur_height)?;
             self.print_progress(self.cur_height);
             self.cur_height += 1;
-
-            if self.cur_height % 1000 == 0 {
-                diesel::r2d2::PoolTransactionManager::commit_transaction(&mut conn)?;
-                drop(conn);
-                conn = self.db.pool.get()?;
-                diesel::r2d2::PoolTransactionManager::begin_transaction(&mut conn)?;
-            }
         }
-        diesel::r2d2::PoolTransactionManager::commit_transaction(&mut conn)?;
-        drop(conn);
         self.on_complete(self.cur_height.saturating_sub(1));
         Ok(())
     }
@@ -101,23 +87,18 @@ impl BlockchainParser {
         &mut self,
         block: &bitcoin::Block,
         height: u64,
-        conn: &mut diesel::r2d2::PooledConnection<
-            diesel::r2d2::ConnectionManager<diesel::sqlite::SqliteConnection>,
-        >,
     ) -> anyhow::Result<()> {
         tracing::trace!(target: "parser", "on_block(height={}) called", height);
-        diesel::insert_into(crate::db::schema::blocks::table)
-            .values(crate::db::Block {
-                height: self.cur_height.try_into()?,
-                version: block.header.version.to_consensus(),
-                time: block.header.time.try_into()?,
-                encoded_target: block.header.bits.to_consensus().try_into()?,
-                nonce: block.header.nonce.try_into()?,
-                tx_count: block.txdata.len().try_into()?,
-                size: block.size().try_into()?,
-                weight: block.weight().to_wu().try_into()?,
-            })
-            .execute(conn)?;
+        self.db.insert_block(crate::db::Block {
+            height: self.cur_height.try_into()?,
+            version: block.header.version.to_consensus(),
+            time: block.header.time.try_into()?,
+            encoded_target: block.header.bits.to_consensus().try_into()?,
+            nonce: block.header.nonce.try_into()?,
+            tx_count: block.txdata.len().try_into()?,
+            size: block.size().try_into()?,
+            weight: block.weight().to_wu().try_into()?,
+        })?;
         Ok(())
     }
 
