@@ -59,6 +59,12 @@ impl BlockchainParser {
             Self::on_header(&header, self.cur_height);
             let block = self.chain_storage.get_block(self.cur_height).unwrap();
 
+            let turnover: u64 = block
+                .txdata
+                .iter()
+                .flat_map(|tx| tx.output.iter().map(|output| output.value))
+                .sum();
+
             tracing::trace!(target: "parser", "on_block(height={}) called", self.cur_height);
             blocks.push(crate::db::Block {
                 height: self.cur_height.try_into()?,
@@ -69,6 +75,7 @@ impl BlockchainParser {
                 tx_count: block.txdata.len().try_into()?,
                 size: block.size().try_into()?,
                 weight: block.weight().to_wu().try_into()?,
+                turnover: turnover.try_into()?,
             });
             if blocks.len() == block_buffer_size {
                 self.db.insert_blocks(blocks)?;

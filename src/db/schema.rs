@@ -10,5 +10,6 @@ diesel::table! {
         tx_count -> Integer,
         size -> Integer,
         weight -> BigInt,
+        turnover -> BigInt,
     }
 }
