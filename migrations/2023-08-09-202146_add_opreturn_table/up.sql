@@ -8,5 +8,6 @@ CREATE TABLE blocks (
     size INTEGER NOT NULL,
     weight BIGINT NOT NULL,
     turnover BIGINT NOT NULL,
-    miner_reward BIGINT NOT NULL
+    miner_reward BIGINT NOT NULL,
+    pool TEXT
 );

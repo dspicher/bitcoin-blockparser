@@ -1,5 +1,7 @@
 use std::time::{Duration, Instant};
 
+use bitcoin_pool_identification::PoolIdentification;
+
 use crate::parser::chain::ChainStorage;
 use crate::ParserOptions;
 
@@ -69,6 +71,8 @@ impl BlockchainParser {
                 .coinbase()
                 .map_or_else(|| 0, |cb| cb.output.iter().map(|output| output.value).sum());
 
+            let pool = block.identify_pool().map(|p| p.name);
+
             tracing::trace!(target: "parser", "on_block(height={}) called", self.cur_height);
             blocks.push(crate::db::Block {
                 height: self.cur_height.try_into()?,
@@ -81,6 +85,7 @@ impl BlockchainParser {
                 weight: block.weight().to_wu().try_into()?,
                 turnover: turnover.try_into()?,
                 miner_reward: miner_reward.try_into()?,
+                pool,
             });
             if blocks.len() == block_buffer_size {
                 self.db.insert_blocks(blocks)?;

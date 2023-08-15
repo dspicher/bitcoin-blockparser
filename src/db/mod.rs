@@ -23,6 +23,7 @@ pub struct Block {
     pub weight: i64,
     pub turnover: i64,
     pub miner_reward: i64,
+    pub pool: Option<String>,
 }
 
 const MIGRATIONS: diesel_migrations::EmbeddedMigrations = diesel_migrations::embed_migrations!();
