@@ -10,7 +10,7 @@ license = "GPL-3.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.72"
+anyhow = "1.0.75"
 bitcoin = "0.30.1"
 bitcoin-pool-identification = "0.2.4"
 clap = { version = "4.3.21", features = [ "cargo" ] }
