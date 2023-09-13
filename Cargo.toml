@@ -13,7 +13,7 @@ edition = "2021"
 anyhow = "1.0.72"
 bitcoin = "0.30.1"
 bitcoin-pool-identification = "0.2.4"
-clap = { version = "4.3.21", features = [ "cargo" ] }
+clap = { version = "4.4.3", features = [ "cargo" ] }
 diesel = { version = "2.1.0", features = [ "r2d2", "sqlite" ], default-features = false }
 diesel_migrations = "2.1.0"
 dirs = "5.0.1"
