@@ -18,7 +18,7 @@ diesel = { version = "2.1.0", features = [ "r2d2", "sqlite" ], default-features 
 diesel_migrations = "2.1.0"
 dirs = "5.0.1"
 rusty-leveldb = "2.0.0"
-tracing = { version = "0.1.37", default-features = false }
+tracing = { version = "0.1.40", default-features = false }
 tracing-subscriber = { version = "0.3.17", features = [ "env-filter", "fmt", "ansi", "tracing-log" ], default-features = false }
 
 [dev-dependencies]
